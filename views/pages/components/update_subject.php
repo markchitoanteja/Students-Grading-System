@@ -7,16 +7,11 @@
             </div>
             <form action="javascript:void(0)" id="update_subject_form">
                 <div class="modal-body">
-<<<<<<< HEAD
                     <div class="loading py-5 text-center d-none">
-=======
-                    <div class="loading text-center d-none">
->>>>>>> c87f6604729a51555f2a6c46925ed895a584d5a5
                         <h3 class="text-muted mb-3">Please Wait...</h3>
                         <i class="spinner-border"></i>
                     </div>
                     <div class="actual-form d-none">
-<<<<<<< HEAD
                         <div class="row mb-3">
                             <div class="col-lg-12">
                                 <div class="form-group">
@@ -33,16 +28,6 @@
                                     <input type="text" class="form-control" id="update_subject_description" required>
                                 </div>
                             </div>
-=======
-                        <div class="form-group mb-3">
-                            <label for="update_subject_code">Subject Code</label>
-                            <input type="text" class="form-control" id="update_subject_code" required>
-                            <small class="text-danger d-none" id="error_update_subject_code">Subject Code is already in use!</small>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label for="update_subject_description">Descriptive Title</label>
-                            <input type="text" class="form-control" id="update_subject_description" required>
->>>>>>> c87f6604729a51555f2a6c46925ed895a584d5a5
                         </div>
                         <div class="row mb-3">
                             <div class="col-lg-4">

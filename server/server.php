@@ -275,11 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         echo json_encode($response);
     }
-<<<<<<< HEAD
-
-=======
     
->>>>>>> c87f6604729a51555f2a6c46925ed895a584d5a5
     if (isset($_POST["update_subject"])) {
         $id = $_POST["id"];
         $code = $_POST["code"];
@@ -332,7 +328,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(true);
     }
 
-<<<<<<< HEAD
     if (isset($_POST["new_teacher"])) {
         $employee_number = $_POST["employee_number"];
         $first_name = $_POST["first_name"];
@@ -635,8 +630,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(true);
     }
 
-=======
->>>>>>> c87f6604729a51555f2a6c46925ed895a584d5a5
     if (isset($_POST["logout"])) {
         unset($_SESSION["user_id"]);
 

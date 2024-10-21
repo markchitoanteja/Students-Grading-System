@@ -7,11 +7,7 @@
             </div>
             <form action="javascript:void(0)" id="new_course_form">
                 <div class="modal-body">
-<<<<<<< HEAD
                     <div class="loading py-5 text-center d-none">
-=======
-                    <div class="loading text-center d-none">
->>>>>>> c87f6604729a51555f2a6c46925ed895a584d5a5
                         <h3 class="text-muted mb-3">Please Wait...</h3>
                         <i class="spinner-border"></i>
                     </div>

@@ -58,6 +58,6 @@
 </main>
 
 <?php include_once "../views/pages/components/new_student.php" ?>
-<?php include_once "../views/pages/components/update_teacher.php" ?>
+<?php include_once "../views/pages/components/update_student.php" ?>
 
 <?php include_once "../views/pages/templates/footer.php" ?>

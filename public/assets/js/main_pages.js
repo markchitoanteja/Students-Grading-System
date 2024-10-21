@@ -451,11 +451,7 @@ jQuery(document).ready(function () {
         });
     })
 
-<<<<<<< HEAD
     $("#new_subject_code").keydown(function () {
-=======
-    $("#new_subject_code").keypress(function () {
->>>>>>> c87f6604729a51555f2a6c46925ed895a584d5a5
         $("#new_subject_code").removeClass("is-invalid");
         $("#error_new_subject_code").addClass("d-none");
     })
@@ -665,16 +661,11 @@ jQuery(document).ready(function () {
         });
     })
 
-<<<<<<< HEAD
     $("#update_subject_code").keydown(function () {
-=======
-    $("#update_subject_code").keypress(function () {
->>>>>>> c87f6604729a51555f2a6c46925ed895a584d5a5
         $("#update_subject_code").removeClass("is-invalid");
         $("#error_update_subject_code").addClass("d-none");
     })
 
-<<<<<<< HEAD
     $("#new_teacher_image").change(function (event) {
         var displayImage = $('#new_teacher_image_display');
         var file = event.target.files[0];
@@ -1256,8 +1247,6 @@ jQuery(document).ready(function () {
         });
     })
 
-=======
->>>>>>> c87f6604729a51555f2a6c46925ed895a584d5a5
     function getOrdinalSuffix(n) {
         const s = ["th", "st", "nd", "rd"], v = n % 100;
 
