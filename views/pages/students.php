@@ -39,7 +39,7 @@
                                     <?php foreach ($students as $student): ?>
                                         <tr>
                                             <td><?= $student["student_number"] ?></td>
-                                            <td> <?= $student["first_name"] . ' ' . (!empty($student["middle_name"]) ? substr($student["middle_name"], 0, 1) . '. ' : '') . $student["last_name"] ?></td>
+                                            <td><?= $student["first_name"] . ' ' . (!empty($student["middle_name"]) ? substr($student["middle_name"], 0, 1) . '. ' : '') . $student["last_name"] ?></td>
                                             <td><?= $student["course"] . " " . $student["year"][0] . "-" . $student["section"] ?></td>
                                             <td class="text-center">
                                                 <i class="bi bi-pencil-fill text-primary me-1 update_student" role="button" student_id="<?= $student["account_id"] ?>"></i>

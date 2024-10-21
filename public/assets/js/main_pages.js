@@ -1038,57 +1038,6 @@ jQuery(document).ready(function () {
         $("#error_update_teacher_password").addClass("d-none");
     })
 
-    $("#new_student_course").change(function () {
-        const code = $(this).val();
-
-        var formData = new FormData();
-
-        formData.append('code', code);
-
-        formData.append('get_course_data_by_code', true);
-
-        $.ajax({
-            url: 'server',
-            data: formData,
-            type: 'POST',
-            dataType: 'JSON',
-            processData: false,
-            contentType: false,
-            success: function (response) {
-                const years = parseInt(response.years);
-
-                $("#new_student_year").removeAttr("disabled");
-                $("#new_student_year").empty();
-
-                for (let i = 1; i <= years; i++) {
-                    const optionText = getOrdinalSuffix(i);
-
-                    $("#new_student_year").append(new Option(optionText + " Year", optionText));
-                }
-            },
-            error: function (_, _, error) {
-                console.error(error);
-            }
-        });
-    })
-
-    $("#new_student_image").change(function (event) {
-        var displayImage = $('#new_student_image_display');
-        var file = event.target.files[0];
-
-        if (file) {
-            var imageURL = URL.createObjectURL(file);
-
-            displayImage.attr('src', imageURL);
-
-            displayImage.on('load', function () {
-                URL.revokeObjectURL(imageURL);
-            });
-        } else {
-            displayImage.attr('src', "assets/img/uploads/default-user-image.png");
-        }
-    })
-
     $("#new_student_form").submit(function () {
         const student_number = $("#new_student_student_number").val();
         const course = $("#new_student_course").val();
@@ -1182,6 +1131,57 @@ jQuery(document).ready(function () {
         }
     })
 
+    $("#new_student_course").change(function () {
+        const code = $(this).val();
+
+        var formData = new FormData();
+
+        formData.append('code', code);
+
+        formData.append('get_course_data_by_code', true);
+
+        $.ajax({
+            url: 'server',
+            data: formData,
+            type: 'POST',
+            dataType: 'JSON',
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                const years = parseInt(response.years);
+
+                $("#new_student_year").removeAttr("disabled");
+                $("#new_student_year").empty();
+
+                for (let i = 1; i <= years; i++) {
+                    const optionText = getOrdinalSuffix(i);
+
+                    $("#new_student_year").append(new Option(optionText + " Year", optionText));
+                }
+            },
+            error: function (_, _, error) {
+                console.error(error);
+            }
+        });
+    })
+
+    $("#new_student_image").change(function (event) {
+        var displayImage = $('#new_student_image_display');
+        var file = event.target.files[0];
+
+        if (file) {
+            var imageURL = URL.createObjectURL(file);
+
+            displayImage.attr('src', imageURL);
+
+            displayImage.on('load', function () {
+                URL.revokeObjectURL(imageURL);
+            });
+        } else {
+            displayImage.attr('src', "assets/img/uploads/default-user-image.png");
+        }
+    })
+
     $("#new_student_student_number").keydown(function () {
         $("#new_student_student_number").removeClass("is-invalid");
 
@@ -1206,6 +1206,90 @@ jQuery(document).ready(function () {
         $("#new_student_confirm_password").removeClass("is-invalid");
 
         $("#error_new_student_password").addClass("d-none");
+    })
+
+    $(document).on("click", ".update_student", function () {
+        const id = $(this).attr("student_id");
+
+        $("#update_student_modal").modal("show");
+
+        $(".actual-form").addClass("d-none");
+        $(".loading").removeClass("d-none");
+
+        var formData = new FormData();
+
+        formData.append('id', id);
+
+        formData.append('get_student_data', true);
+
+        $.ajax({
+            url: 'server',
+            data: formData,
+            type: 'POST',
+            dataType: 'JSON',
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                $("#update_student_account_id").val(response.account_id);
+                $("#update_student_student_number").val(response.student_number);
+                $("#update_student_course").val(response.course);
+                $("#update_student_section").val(response.section);
+                $("#update_student_first_name").val(response.first_name);
+                $("#update_student_middle_name").val(response.middle_name);
+                $("#update_student_last_name").val(response.last_name);
+                $("#update_student_birthday").val(response.birthday);
+                $("#update_student_mobile_number").val(response.mobile_number);
+                $("#update_student_email").val(response.email);
+                $("#update_student_address").val(response.address);
+                $("#update_student_username").val(response.username);
+                $("#update_student_image_display").attr("src", "assets/img/uploads/" + response.image);
+
+                $("#update_student_old_image").val(response.image);
+                $("#update_student_old_password").val(response.password);
+                $("#update_student_old_username").val(response.username);
+                $("#update_student_old_student_number").val(response.student_number);
+
+                const code = response.course;
+
+                var formData_2 = new FormData();
+
+                formData_2.append('code', code);
+
+                formData_2.append('get_course_data_by_code', true);
+
+                $.ajax({
+                    url: 'server',
+                    data: formData_2,
+                    type: 'POST',
+                    dataType: 'JSON',
+                    processData: false,
+                    contentType: false,
+                    success: function (response_2) {
+                        const years = parseInt(response_2.years);
+
+                        $("#update_student_year").removeAttr("disabled");
+                        $("#update_student_year").empty();
+
+                        for (let i = 1; i <= years; i++) {
+                            const optionText = getOrdinalSuffix(i);
+
+                            $("#update_student_year").append(new Option(optionText + " Year", optionText));
+                        }
+
+                        $("#update_student_year").val(response.year);
+                    },
+                    error: function (_, _, error) {
+                        console.error(error);
+                    }
+                });
+
+                $(".actual-form").removeClass("d-none");
+                $(".loading").addClass("d-none");
+            },
+            error: function (_, _, error) {
+                console.error(error);
+            }
+        });
     })
 
     $(document).on("click", ".delete_student", function () {
@@ -1245,6 +1329,201 @@ jQuery(document).ready(function () {
                 });
             }
         });
+    })
+
+    $("#update_student_form").submit(function () {
+        const student_number = $("#update_student_student_number").val();
+        const course = $("#update_student_course").val();
+        const year = $("#update_student_year").val();
+        const section = $("#update_student_section").val();
+        const first_name = $("#update_student_first_name").val();
+        const middle_name = $("#update_student_middle_name").val();
+        const last_name = $("#update_student_last_name").val();
+        const birthday = $("#update_student_birthday").val();
+        const mobile_number = $("#update_student_mobile_number").val();
+        const email = $("#update_student_email").val();
+        const address = $("#update_student_address").val();
+        const username = $("#update_student_username").val();
+        const password = $("#update_student_password").val();
+        const confirm_password = $("#update_student_confirm_password").val();
+        const image_file = $("#update_student_image")[0].files[0];
+
+        const account_id = $("#update_student_account_id").val();
+        const old_image = $("#update_student_old_image").val();
+        const old_password = $("#update_student_old_password").val();
+        const old_student_number = $("#update_student_old_student_number").val();
+        const old_username = $("#update_student_old_username").val();
+
+        let is_error = false;
+        let is_new_image = false;
+        let is_new_password = false;
+
+        if ((password || confirm_password) && (password != confirm_password)) {
+            $("#update_student_password").addClass("is-invalid");
+            $("#update_student_confirm_password").addClass("is-invalid");
+
+            $("#error_update_student_password").removeClass("d-none");
+
+            is_error = true;
+        }
+
+        if (!is_error) {
+            if (image_file) {
+                is_new_image = true;
+            }
+
+            if (password) {
+                is_new_password = true;
+            }
+
+            $("#update_student_submit").text("Please Wait..");
+            $("#update_student_submit").attr("disabled", true);
+
+            $(".actual-form").addClass("d-none");
+            $(".loading").removeClass("d-none");
+
+            var formData = new FormData();
+
+            formData.append('student_number', student_number);
+            formData.append('course', course);
+            formData.append('year', year);
+            formData.append('section', section);
+            formData.append('first_name', first_name);
+            formData.append('middle_name', middle_name);
+            formData.append('last_name', last_name);
+            formData.append('birthday', birthday);
+            formData.append('mobile_number', mobile_number);
+            formData.append('email', email);
+            formData.append('address', address);
+            formData.append('image_file', image_file);
+            formData.append('username', username);
+            formData.append('password', password);
+
+            formData.append('account_id', account_id);
+            formData.append('old_image', old_image);
+            formData.append('old_password', old_password);
+            formData.append('old_username', old_username);
+            formData.append('old_student_number', old_student_number);
+
+            formData.append('is_new_image', is_new_image);
+            formData.append('is_new_password', is_new_password);
+
+            formData.append('update_student', true);
+
+            $.ajax({
+                url: 'server',
+                data: formData,
+                type: 'POST',
+                dataType: 'JSON',
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.username_ok && response.student_number_ok) {
+                        location.reload();
+                    } else {
+                        $("#update_student_submit").text("Submit");
+                        $("#update_student_submit").removeAttr("disabled");
+
+                        $(".loading").addClass("d-none");
+                        $(".actual-form").removeClass("d-none");
+
+                        if (!response.username_ok) {
+                            $("#update_student_username").addClass("is-invalid");
+                            $("#error_update_student_username").removeClass("d-none");
+
+                            $("#update_student_username").focus();
+                        }
+
+                        if (!response.student_number_ok) {
+                            $("#update_student_student_number").addClass("is-invalid");
+                            $("#error_update_student_student_number").removeClass("d-none");
+
+                            $("#update_student_student_number").focus();
+                        }
+                    }
+                },
+                error: function (_, _, error) {
+                    console.error(error);
+                }
+            });
+        }
+    })
+
+    $("#update_student_course").change(function () {
+        const code = $(this).val();
+
+        var formData = new FormData();
+
+        formData.append('code', code);
+
+        formData.append('get_course_data_by_code', true);
+
+        $.ajax({
+            url: 'server',
+            data: formData,
+            type: 'POST',
+            dataType: 'JSON',
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                const years = parseInt(response.years);
+
+                $("#update_student_year").removeAttr("disabled");
+                $("#update_student_year").empty();
+
+                for (let i = 1; i <= years; i++) {
+                    const optionText = getOrdinalSuffix(i);
+
+                    $("#update_student_year").append(new Option(optionText + " Year", optionText));
+                }
+            },
+            error: function (_, _, error) {
+                console.error(error);
+            }
+        });
+    })
+
+    $("#update_student_image").change(function (event) {
+        var displayImage = $('#update_student_image_display');
+        var file = event.target.files[0];
+
+        if (file) {
+            var imageURL = URL.createObjectURL(file);
+
+            displayImage.attr('src', imageURL);
+
+            displayImage.on('load', function () {
+                URL.revokeObjectURL(imageURL);
+            });
+        } else {
+            displayImage.attr('src', "assets/img/uploads/default-user-image.png");
+        }
+    })
+
+    $("#update_student_student_number").keydown(function () {
+        $("#update_student_student_number").removeClass("is-invalid");
+
+        $("#error_update_student_student_number").addClass("d-none");
+    })
+
+    $("#update_student_username").keydown(function () {
+        $("#update_student_username").removeClass("is-invalid");
+
+        $("#error_update_student_username").addClass("d-none");
+    })
+
+    $("#update_student_password").keydown(function () {
+        $("#update_student_password").removeClass("is-invalid");
+        $("#update_student_confirm_password").removeClass("is-invalid");
+
+        $("#error_update_student_password").addClass("d-none");
+    })
+
+    $("#update_student_confirm_password").keydown(function () {
+        $("#update_student_password").removeClass("is-invalid");
+        $("#update_student_confirm_password").removeClass("is-invalid");
+
+        $("#error_update_student_password").addClass("d-none");
     })
 
     function getOrdinalSuffix(n) {

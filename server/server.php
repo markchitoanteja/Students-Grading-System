@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         echo json_encode($course_data);
     }
-    
+
     if (isset($_POST["get_subject_data"])) {
         $id = $_POST["id"];
 
@@ -112,12 +112,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(array_merge($user_data, $teacher_data));
     }
 
-    if (isset($_POST["get_course_data_by_code"])) {
-        $code = $_POST["code"];
+    if (isset($_POST["get_student_data"])) {
+        $id = $_POST["id"];
 
-        $course_data = $db->select_one("courses", "code", $code);
+        $user_data = $db->select_one("users", "id", $id);
+        $student_data = $db->select_one("students", "account_id", $id);
 
-        echo json_encode($course_data);
+        echo json_encode(array_merge($user_data, $student_data));
     }
 
     if (isset($_POST["update_admin_account"])) {
@@ -275,7 +276,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         echo json_encode($response);
     }
-    
+
     if (isset($_POST["update_subject"])) {
         $id = $_POST["id"];
         $code = $_POST["code"];
@@ -608,6 +609,102 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION["notification"] = [
                 "title" => "Success!",
                 "text" => "A student has been added successfully.",
+                "icon" => "success",
+            ];
+        }
+
+        echo json_encode($response);
+    }
+
+    if (isset($_POST["update_student"])) {
+        $student_number = $_POST["student_number"];
+        $first_name = $_POST["first_name"];
+        $middle_name = $_POST["middle_name"];
+        $last_name = $_POST["last_name"];
+        $birthday = $_POST["birthday"];
+        $mobile_number = $_POST["mobile_number"];
+        $email = $_POST["email"];
+        $address = $_POST["address"];
+        $image_file = isset($_FILES["image_file"]) ? $_FILES["image_file"] : null;
+        $username = $_POST["username"];
+        $password = $_POST["password"];
+
+        $account_id = $_POST["account_id"];
+        $old_image = $_POST["old_image"];
+        $old_password = $_POST["old_password"];
+        $old_student_number = $_POST["old_student_number"];
+        $old_username = $_POST["old_username"];
+
+        $is_new_image = $_POST["is_new_image"];
+        $is_new_password = $_POST["is_new_password"];
+
+        $response = [
+            "student_number_ok" => true,
+            "username_ok" => true,
+        ];
+
+        $is_error = false;
+
+        if (($student_number != $old_student_number) && ($db->select_one("students", "student_number", $student_number))) {
+            $response["student_number_ok"] = false;
+
+            $is_error = true;
+        }
+
+        if (($username != $old_username) && ($db->select_one("users", "username", $username))) {
+            $response["username_ok"] = false;
+
+            $is_error = true;
+        }
+
+        if (!$is_error) {
+            if (!empty($middle_name)) {
+                $middle_initial = strtoupper(substr($middle_name, 0, 1)) . '.';
+
+                $name = $first_name . ' ' . $middle_initial . ' ' . $last_name;
+            } else {
+                $name = $first_name . ' ' . $last_name;
+            }
+
+            if ($is_new_image == "true") {
+                $image = upload_image("assets/img/uploads/", $image_file);
+            } else {
+                $image = $old_image;
+            }
+
+            if ($is_new_password == "true") {
+                $password = password_hash($password, PASSWORD_BCRYPT);
+            } else {
+                $password = $old_password;
+            }
+
+            $user_data = [
+                "name" => $name,
+                "username" => $username,
+                "password" => $password,
+                "image" => $image,
+                "updated_at" => $current_datetime,
+            ];
+
+            $db->update("users", $user_data, "id", $account_id);
+
+            $student_data = [
+                "student_number" => $student_number,
+                "first_name" => $first_name,
+                "middle_name" => $middle_name,
+                "last_name" => $last_name,
+                "birthday" => $birthday,
+                "mobile_number" => $mobile_number,
+                "email" => $email,
+                "address" => $address,
+                "updated_at" => $current_datetime,
+            ];
+
+            $db->update("students", $student_data, "account_id", $account_id);
+
+            $_SESSION["notification"] = [
+                "title" => "Success!",
+                "text" => "A student has been updated successfully.",
                 "icon" => "success",
             ];
         }

@@ -2,7 +2,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">New Student</h5>
+                <h5 class="modal-title">Update Student</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="javascript:void(0)" id="update_student_form">
@@ -18,7 +18,7 @@
                                     <img id="update_student_image_display" class="rounded-circle" src="assets/img/uploads/default-user-image.png" alt="User Image" style="width: 100px; height: 100px;">
                                 </div>
                                 <div class="form-group">
-                                    <input type="file" class="form-control-file" id="update_student_image" accept="image/*" required>
+                                    <input type="file" class="form-control-file" id="update_student_image" accept="image/*">
                                 </div>
                             </div>
                         </div>
@@ -34,7 +34,6 @@
                                 <div class="form-group">
                                     <label for="update_student_course">Course</label>
                                     <select id="update_student_course" class="form-select" required>
-                                        <option value selected disabled></option>
                                         <?php if ($courses = $db->select_all("courses", "code", "ASC")): ?>
                                             <?php foreach ($courses as $course): ?>
                                                 <option value="<?= $course["code"] ?>"><?= $course["description"] ?></option>
@@ -117,20 +116,26 @@
                             <div class="col-lg-4">
                                 <div class="form-group">
                                     <label for="update_student_password">Password</label>
-                                    <input type="password" class="form-control" id="update_student_password" required>
+                                    <input type="password" class="form-control" id="update_student_password" placeholder="Password is hidden">
                                     <small class="text-danger d-none" id="error_update_student_password">Passwords do not matched!</small>
                                 </div>
                             </div>
                             <div class="col-lg-4">
                                 <div class="form-group">
                                     <label for="update_student_confirm_password">Confirm Password</label>
-                                    <input type="password" class="form-control" id="update_student_confirm_password" required>
+                                    <input type="password" class="form-control" id="update_student_confirm_password" placeholder="Password is hidden">
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <input type="hidden" id="update_student_account_id">
+                    <input type="hidden" id="update_student_old_image">
+                    <input type="hidden" id="update_student_old_student_number">
+                    <input type="hidden" id="update_student_old_username">
+                    <input type="hidden" id="update_student_old_password">
+
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary" id="update_student_submit">Submit</button>
                 </div>
