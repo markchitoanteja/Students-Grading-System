@@ -1,0 +1,654 @@
+<?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $current_datetime = date("Y-m-d H:i:s");
+
+    function upload_image($target_directory, $image_file)
+    {
+        $response = false;
+
+        if (isset($image_file) && $image_file['error'] == UPLOAD_ERR_OK) {
+            $uploadedFile = $image_file;
+
+            $target_dir = $target_directory;
+
+            if ($uploadedFile['size'] > 0) {
+                $file_temp = $uploadedFile['tmp_name'];
+                $file_ext = pathinfo($uploadedFile['name'], PATHINFO_EXTENSION);
+
+                $unique_name = uniqid('img_', true) . '.' . $file_ext;
+
+                if (move_uploaded_file($file_temp, $target_dir . '/' . $unique_name)) {
+                    $response = $unique_name;
+                }
+            }
+        }
+
+        return $response;
+    }
+
+    function generate_uuid()
+    {
+        return bin2hex(random_bytes(16));
+    }
+
+    if (isset($_POST["login"])) {
+        $username = $_POST["username"];
+        $password = $_POST["password"];
+        $remember_me = $_POST["remember_me"];
+
+        $response = false;
+
+        $user = $db->select_one('users', 'username', $username);
+
+        if ($user) {
+            $hashed_password = $user["password"];
+
+            if (password_verify($password, $hashed_password)) {
+                if ($user["user_type"] == "admin") {
+                    $_SESSION["user_id"] = $user["id"];
+
+                    if ($remember_me == "true") {
+                        $_SESSION["username"] = $username;
+                        $_SESSION["password"] = $password;
+                    } else {
+                        unset($_SESSION["username"]);
+                        unset($_SESSION["password"]);
+                    }
+
+                    $response = true;
+                }
+            }
+        }
+
+        echo json_encode($response);
+    }
+
+    if (isset($_POST["get_admin_data"])) {
+        $user_id = $_POST["user_id"];
+
+        $user_data = $db->select_one("users", "id", $user_id);
+
+        echo json_encode($user_data);
+    }
+
+    if (isset($_POST["get_course_data"])) {
+        $id = $_POST["id"];
+
+        $course_data = $db->select_one("courses", "id", $id);
+
+        echo json_encode($course_data);
+    }
+    
+    if (isset($_POST["get_subject_data"])) {
+        $id = $_POST["id"];
+
+        $subject_data = $db->select_one("subjects", "id", $id);
+
+        echo json_encode($subject_data);
+    }
+
+    if (isset($_POST["get_course_data_by_code"])) {
+        $code = $_POST["code"];
+
+        $course_data = $db->select_one("courses", "code", $code);
+
+        echo json_encode($course_data);
+    }
+
+    if (isset($_POST["get_subject_data"])) {
+        $id = $_POST["id"];
+
+        $subject_data = $db->select_one("subjects", "id", $id);
+
+        echo json_encode($subject_data);
+    }
+
+    if (isset($_POST["get_teacher_data"])) {
+        $id = $_POST["id"];
+
+        $user_data = $db->select_one("users", "id", $id);
+        $teacher_data = $db->select_one("teachers", "account_id", $id);
+
+        echo json_encode(array_merge($user_data, $teacher_data));
+    }
+
+    if (isset($_POST["get_course_data_by_code"])) {
+        $code = $_POST["code"];
+
+        $course_data = $db->select_one("courses", "code", $code);
+
+        echo json_encode($course_data);
+    }
+
+    if (isset($_POST["update_admin_account"])) {
+        $id = $_POST["id"];
+        $name = $_POST["name"];
+        $username = $_POST["username"];
+        $password = $_POST["password"];
+        $image_file = isset($_FILES["image_file"]) ? $_FILES["image_file"] : null;
+        $old_password = $_POST["old_password"];
+        $old_image = $_POST["old_image"];
+        $is_new_password = $_POST["is_new_password"];
+        $is_new_image = $_POST["is_new_image"];
+
+        $response = false;
+
+        if ($is_new_password == "true") {
+            $password = password_hash($password, PASSWORD_BCRYPT);
+        } else {
+            $password = $old_password;
+        }
+
+        if ($is_new_image == "true") {
+            $image = upload_image("assets/img/uploads/", $image_file);
+        } else {
+            $image = $old_image;
+        }
+
+        $data = [
+            "name" => $name,
+            "username" => $username,
+            "password" => $password,
+            "image" => $image,
+            "updated_at" => $current_datetime,
+        ];
+
+        if ($db->update("users", $data, "id", $id)) {
+            $_SESSION["notification"] = [
+                "title" => "Success!",
+                "text" => "The admin data has been updated successfully.",
+                "icon" => "success",
+            ];
+
+            $response = true;
+        }
+
+        echo json_encode($response);
+    }
+
+    if (isset($_POST["new_course"])) {
+        $code = $_POST["code"];
+        $description = $_POST["description"];
+        $years = $_POST["years"];
+
+        $response = false;
+
+        $data = [
+            "uuid" => generate_uuid(),
+            "code" => $code,
+            "description" => $description,
+            "years" => $years,
+            "created_at" => $current_datetime,
+            "updated_at" => $current_datetime,
+        ];
+
+        if ($db->insert("courses", $data)) {
+            $_SESSION["notification"] = [
+                "title" => "Success!",
+                "text" => "A course has been added successfully.",
+                "icon" => "success",
+            ];
+
+            $response = true;
+        }
+
+        echo json_encode($response);
+    }
+
+    if (isset($_POST["update_course"])) {
+        $id = $_POST["id"];
+        $code = $_POST["code"];
+        $description = $_POST["description"];
+        $years = $_POST["years"];
+
+        $response = false;
+
+        $data = [
+            "code" => $code,
+            "description" => $description,
+            "years" => $years,
+            "updated_at" => $current_datetime,
+        ];
+
+        if ($db->update("courses", $data, "id", $id)) {
+            $_SESSION["notification"] = [
+                "title" => "Success!",
+                "text" => "A course has been updated successfully.",
+                "icon" => "success",
+            ];
+
+            $response = true;
+        }
+
+        echo json_encode($response);
+    }
+
+    if (isset($_POST["delete_course"])) {
+        $id = $_POST["id"];
+
+        $db->delete("courses", "id", $id);
+
+        $_SESSION["notification"] = [
+            "title" => "Success!",
+            "text" => "A course has been deleted successfully.",
+            "icon" => "success",
+        ];
+
+        echo json_encode(true);
+    }
+
+    if (isset($_POST["new_subject"])) {
+        $code = $_POST["code"];
+        $description = $_POST["description"];
+        $lecture_units = $_POST["lecture_units"];
+        $laboratory_units = $_POST["laboratory_units"];
+        $hours_per_week = $_POST["hours_per_week"];
+        $course = $_POST["course"];
+        $year = $_POST["year"];
+        $semester = $_POST["semester"];
+
+        $response = false;
+
+        $data = [
+            "uuid" => generate_uuid(),
+            "code" => $code,
+            "description" => $description,
+            "lecture_units" => $lecture_units,
+            "laboratory_units" => $laboratory_units,
+            "hours_per_week" => $hours_per_week,
+            "course" => $course,
+            "year" => $year,
+            "semester" => $semester,
+            "created_at" => $current_datetime,
+            "updated_at" => $current_datetime,
+        ];
+
+        if ($db->insert("subjects", $data)) {
+            $_SESSION["notification"] = [
+                "title" => "Success!",
+                "text" => "A subject has been added successfully.",
+                "icon" => "success",
+            ];
+
+            $response = true;
+        }
+
+        echo json_encode($response);
+    }
+<<<<<<< HEAD
+
+=======
+    
+>>>>>>> c87f6604729a51555f2a6c46925ed895a584d5a5
+    if (isset($_POST["update_subject"])) {
+        $id = $_POST["id"];
+        $code = $_POST["code"];
+        $description = $_POST["description"];
+        $lecture_units = $_POST["lecture_units"];
+        $laboratory_units = $_POST["laboratory_units"];
+        $hours_per_week = $_POST["hours_per_week"];
+        $course = $_POST["course"];
+        $year = $_POST["year"];
+        $semester = $_POST["semester"];
+
+        $response = false;
+
+        $data = [
+            "code" => $code,
+            "description" => $description,
+            "lecture_units" => $lecture_units,
+            "laboratory_units" => $laboratory_units,
+            "hours_per_week" => $hours_per_week,
+            "course" => $course,
+            "year" => $year,
+            "semester" => $semester,
+            "updated_at" => $current_datetime,
+        ];
+
+        if ($db->update("subjects", $data, "id", $id)) {
+            $_SESSION["notification"] = [
+                "title" => "Success!",
+                "text" => "A subject has been updated successfully.",
+                "icon" => "success",
+            ];
+
+            $response = true;
+        }
+
+        echo json_encode($data);
+    }
+
+    if (isset($_POST["delete_subject"])) {
+        $id = $_POST["id"];
+
+        $db->delete("subjects", "id", $id);
+
+        $_SESSION["notification"] = [
+            "title" => "Success!",
+            "text" => "A subject has been deleted successfully.",
+            "icon" => "success",
+        ];
+
+        echo json_encode(true);
+    }
+
+<<<<<<< HEAD
+    if (isset($_POST["new_teacher"])) {
+        $employee_number = $_POST["employee_number"];
+        $first_name = $_POST["first_name"];
+        $middle_name = $_POST["middle_name"];
+        $last_name = $_POST["last_name"];
+        $birthday = $_POST["birthday"];
+        $mobile_number = $_POST["mobile_number"];
+        $email = $_POST["email"];
+        $address = $_POST["address"];
+        $image_file = $_FILES["image_file"];
+        $username = $_POST["username"];
+        $password = $_POST["password"];
+
+        $response = [
+            "employee_number_ok" => true,
+            "username_ok" => true,
+        ];
+
+        $is_error = false;
+
+        if ($db->select_one("teachers", "employee_number", $employee_number)) {
+            $response["employee_number_ok"] = false;
+
+            $is_error = true;
+        }
+
+        if ($db->select_one("users", "username", $username)) {
+            $response["username_ok"] = false;
+
+            $is_error = true;
+        }
+
+        if (!$is_error) {
+            if (!empty($middle_name)) {
+                $middle_initial = strtoupper(substr($middle_name, 0, 1)) . '.';
+
+                $name = $first_name . ' ' . $middle_initial . ' ' . $last_name;
+            } else {
+                $name = $first_name . ' ' . $last_name;
+            }
+
+            $image = upload_image("assets/img/uploads/", $image_file);
+
+            $user_data = [
+                "uuid" => generate_uuid(),
+                "name" => $name,
+                "username" => $username,
+                "password" => password_hash($password, PASSWORD_BCRYPT),
+                "image" => $image,
+                "user_type" => "teacher",
+                "created_at" => $current_datetime,
+                "updated_at" => $current_datetime,
+            ];
+
+            $db->insert("users", $user_data);
+
+            $account_id = $db->get_last_insert_id();
+
+            $teacher_data = [
+                "uuid" => generate_uuid(),
+                "account_id" => $account_id,
+                "employee_number" => $employee_number,
+                "first_name" => $first_name,
+                "middle_name" => $middle_name,
+                "last_name" => $last_name,
+                "birthday" => $birthday,
+                "mobile_number" => $mobile_number,
+                "email" => $email,
+                "address" => $address,
+                "created_at" => $current_datetime,
+                "updated_at" => $current_datetime,
+            ];
+
+            $db->insert("teachers", $teacher_data);
+
+            $_SESSION["notification"] = [
+                "title" => "Success!",
+                "text" => "A teacher has been added successfully.",
+                "icon" => "success",
+            ];
+        }
+
+        echo json_encode($response);
+    }
+
+    if (isset($_POST["update_teacher"])) {
+        $employee_number = $_POST["employee_number"];
+        $first_name = $_POST["first_name"];
+        $middle_name = $_POST["middle_name"];
+        $last_name = $_POST["last_name"];
+        $birthday = $_POST["birthday"];
+        $mobile_number = $_POST["mobile_number"];
+        $email = $_POST["email"];
+        $address = $_POST["address"];
+        $image_file = isset($_FILES["image_file"]) ? $_FILES["image_file"] : null;
+        $username = $_POST["username"];
+        $password = $_POST["password"];
+
+        $account_id = $_POST["account_id"];
+        $old_image = $_POST["old_image"];
+        $old_password = $_POST["old_password"];
+        $old_employee_number = $_POST["old_employee_number"];
+        $old_username = $_POST["old_username"];
+
+        $is_new_image = $_POST["is_new_image"];
+        $is_new_password = $_POST["is_new_password"];
+
+        $response = [
+            "employee_number_ok" => true,
+            "username_ok" => true,
+        ];
+
+        $is_error = false;
+
+        if (($employee_number != $old_employee_number) && ($db->select_one("teachers", "employee_number", $employee_number))) {
+            $response["employee_number_ok"] = false;
+
+            $is_error = true;
+        }
+
+        if (($username != $old_username) && ($db->select_one("users", "username", $username))) {
+            $response["username_ok"] = false;
+
+            $is_error = true;
+        }
+
+        if (!$is_error) {
+            if (!empty($middle_name)) {
+                $middle_initial = strtoupper(substr($middle_name, 0, 1)) . '.';
+
+                $name = $first_name . ' ' . $middle_initial . ' ' . $last_name;
+            } else {
+                $name = $first_name . ' ' . $last_name;
+            }
+
+            if ($is_new_image == "true") {
+                $image = upload_image("assets/img/uploads/", $image_file);
+            } else {
+                $image = $old_image;
+            }
+
+            if ($is_new_password == "true") {
+                $password = password_hash($password, PASSWORD_BCRYPT);
+            } else {
+                $password = $old_password;
+            }
+
+            $user_data = [
+                "name" => $name,
+                "username" => $username,
+                "password" => $password,
+                "image" => $image,
+                "updated_at" => $current_datetime,
+            ];
+
+            $db->update("users", $user_data, "id", $account_id);
+
+            $teacher_data = [
+                "employee_number" => $employee_number,
+                "first_name" => $first_name,
+                "middle_name" => $middle_name,
+                "last_name" => $last_name,
+                "birthday" => $birthday,
+                "mobile_number" => $mobile_number,
+                "email" => $email,
+                "address" => $address,
+                "updated_at" => $current_datetime,
+            ];
+
+            $db->update("teachers", $teacher_data, "account_id", $account_id);
+
+            $_SESSION["notification"] = [
+                "title" => "Success!",
+                "text" => "A teacher has been updated successfully.",
+                "icon" => "success",
+            ];
+        }
+
+        echo json_encode($response);
+    }
+
+    if (isset($_POST["delete_teacher"])) {
+        $id = $_POST["id"];
+
+        $db->delete("users", "id", $id);
+        $db->delete("teachers", "account_id", $id);
+
+        $_SESSION["notification"] = [
+            "title" => "Success!",
+            "text" => "A teacher has been deleted successfully.",
+            "icon" => "success",
+        ];
+
+        echo json_encode(true);
+    }
+
+    if (isset($_POST["new_student"])) {
+        $student_number = $_POST["student_number"];
+        $course = $_POST["course"];
+        $year = $_POST["year"];
+        $section = $_POST["section"];
+        $first_name = $_POST["first_name"];
+        $middle_name = $_POST["middle_name"];
+        $last_name = $_POST["last_name"];
+        $birthday = $_POST["birthday"];
+        $mobile_number = $_POST["mobile_number"];
+        $email = $_POST["email"];
+        $address = $_POST["address"];
+        $image_file = $_FILES["image_file"];
+        $username = $_POST["username"];
+        $password = $_POST["password"];
+
+        $response = [
+            "student_number_ok" => true,
+            "username_ok" => true,
+        ];
+
+        $is_error = false;
+
+        if ($db->select_one("students", "student_number", $student_number)) {
+            $response["student_number_ok"] = false;
+
+            $is_error = true;
+        }
+
+        if ($db->select_one("users", "username", $username)) {
+            $response["username_ok"] = false;
+
+            $is_error = true;
+        }
+
+        if (!$is_error) {
+            if (!empty($middle_name)) {
+                $middle_initial = strtoupper(substr($middle_name, 0, 1)) . '.';
+
+                $name = $first_name . ' ' . $middle_initial . ' ' . $last_name;
+            } else {
+                $name = $first_name . ' ' . $last_name;
+            }
+
+            $image = upload_image("assets/img/uploads/", $image_file);
+
+            $user_data = [
+                "uuid" => generate_uuid(),
+                "name" => $name,
+                "username" => $username,
+                "password" => password_hash($password, PASSWORD_BCRYPT),
+                "image" => $image,
+                "user_type" => "student",
+                "created_at" => $current_datetime,
+                "updated_at" => $current_datetime,
+            ];
+
+            $db->insert("users", $user_data);
+
+            $account_id = $db->get_last_insert_id();
+
+            $teacher_data = [
+                "uuid" => generate_uuid(),
+                "account_id" => $account_id,
+                "student_number" => $student_number,
+                "course" => $course,
+                "year" => $year,
+                "section" => $section,
+                "first_name" => $first_name,
+                "middle_name" => $middle_name,
+                "last_name" => $last_name,
+                "birthday" => $birthday,
+                "mobile_number" => $mobile_number,
+                "email" => $email,
+                "address" => $address,
+                "created_at" => $current_datetime,
+                "updated_at" => $current_datetime,
+            ];
+
+            $db->insert("students", $teacher_data);
+
+            $_SESSION["notification"] = [
+                "title" => "Success!",
+                "text" => "A student has been added successfully.",
+                "icon" => "success",
+            ];
+        }
+
+        echo json_encode($response);
+    }
+
+    if (isset($_POST["delete_student"])) {
+        $id = $_POST["id"];
+
+        $db->delete("users", "id", $id);
+        $db->delete("students", "account_id", $id);
+
+        $_SESSION["notification"] = [
+            "title" => "Success!",
+            "text" => "A student has been deleted successfully.",
+            "icon" => "success",
+        ];
+
+        echo json_encode(true);
+    }
+
+=======
+>>>>>>> c87f6604729a51555f2a6c46925ed895a584d5a5
+    if (isset($_POST["logout"])) {
+        unset($_SESSION["user_id"]);
+
+        $_SESSION["notification"] = [
+            "type" => "alert-success bg-success",
+            "message" => "You have been logged out.",
+        ];
+
+        echo json_encode(true);
+    }
+} else {
+    http_response_code(500);
+
+    echo "Direct access is not allowed!";
+}
