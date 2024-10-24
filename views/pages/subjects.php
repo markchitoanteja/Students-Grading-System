@@ -41,10 +41,10 @@ if ($_SESSION["user_type"] != "admin"){
                                     <th>Subject Code</th>
                                     <th>Descriptive Title</th>
                                     <th>Course</th>
-                                    <th>Total Units</th>
-                                    <th>Lec Units</th>
-                                    <th>Lab Units</th>
-                                    <th>Hours/Week</th>
+                                    <th class="text-center">Total Units</th>
+                                    <th class="text-center">Lec Units</th>
+                                    <th class="text-center">Lab Units</th>
+                                    <th class="text-center">Hours/Week</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -55,10 +55,10 @@ if ($_SESSION["user_type"] != "admin"){
                                             <td><?= $subjects["code"] ?></td>
                                             <td><?= $subjects["description"] ?></td>
                                             <td><?= $subjects["course"] ?></td>
-                                            <td><?= intval($subjects["lecture_units"]) + intval($subjects["laboratory_units"]) ?></td>
-                                            <td><?= $subjects["lecture_units"] ?></td>
-                                            <td><?= $subjects["laboratory_units"] ?></td>
-                                            <td><?= $subjects["hours_per_week"] ?></td>
+                                            <td class="text-center"><?= intval($subjects["lecture_units"]) + intval($subjects["laboratory_units"]) ?> Unit<?= intval($subjects["lecture_units"]) + intval($subjects["laboratory_units"]) > 1 ? "s" : null ?></td>
+                                            <td class="text-center"><?= $subjects["lecture_units"] ?> Unit<?= intval($subjects["lecture_units"]) > 1 ? "s" : null ?></td>
+                                            <td class="text-center"><?= $subjects["laboratory_units"] ?> Unit<?= intval($subjects["laboratory_units"]) > 1 ? "s" : null ?></td>
+                                            <td class="text-center"><?= $subjects["hours_per_week"] ?> Hour<?= intval($subjects["hours_per_week"]) > 1 ? "s" : null ?></td>
                                             <td class="text-center">
                                                 <i class="bi bi-pencil-fill text-primary me-1 update_subject" role="button" subject_id="<?= $subjects["id"] ?>"></i>
                                                 <i class="bi bi-trash-fill text-danger delete_subject" role="button" subject_id="<?= $subjects["id"] ?>"></i>

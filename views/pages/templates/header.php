@@ -58,7 +58,7 @@ if (!isset($_SESSION["user_id"])) {
                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
                         <li class="dropdown-header">
                             <h6><?= $user_data["name"] ?></h6>
-                            <span><?= $user_data["user_type"] ?></span>
+                            <span><?= ucfirst($user_data["user_type"]) ?></span>
                         </li>
                         <li>
                             <hr class="dropdown-divider">
@@ -149,7 +149,14 @@ if (!isset($_SESSION["user_id"])) {
                         <span>Grade Components</span>
                     </a>
                 </li>
-                <!-- Student Grades -->
+                <!-- Grades Entry -->
+                <li class="nav-item">
+                    <a class="nav-link <?= $current_page != "grade_entries" ? "collapsed" : null ?>" href="grade_entries">
+                        <i class="bi bi-pencil-fill"></i>
+                        <span>Grade Entries</span>
+                    </a>
+                </li>
+                <!-- Student Grades-->
                 <li class="nav-item">
                     <a class="nav-link <?= $current_page != "student_grades" ? "collapsed" : null ?>" href="student_grades">
                         <i class="bi bi-bar-chart-fill"></i>

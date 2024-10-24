@@ -78,20 +78,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($course_data);
     }
 
-    if (isset($_POST["get_subject_data"])) {
-        $id = $_POST["id"];
-
-        $subject_data = $db->select_one("subjects", "id", $id);
-
-        echo json_encode($subject_data);
-    }
-
     if (isset($_POST["get_course_data_by_code"])) {
         $code = $_POST["code"];
 
         $course_data = $db->select_one("courses", "code", $code);
 
         echo json_encode($course_data);
+    }
+
+    if (isset($_POST["get_student_data_by_account_id"])) {
+        $account_id = $_POST["account_id"];
+
+        $student_data = $db->select_one("students", "account_id", $account_id);
+
+        echo json_encode($student_data);
+    }
+
+    if (isset($_POST["get_subjects"])) {
+        $course = $_POST["course"];
+        $year = $_POST["year"];
+        $semester = $_POST["semester"];
+
+        $sql = "SELECT id, description FROM subjects WHERE course='" . $course . "' AND year='" . $year . "' AND semester='" . $semester . "'";
+        $subjects = $db->select_many(null, null, null, null, null, $sql);
+
+        echo json_encode($subjects);
     }
 
     if (isset($_POST["get_subject_data"])) {
@@ -118,6 +129,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $student_data = $db->select_one("students", "account_id", $id);
 
         echo json_encode(array_merge($user_data, $student_data));
+    }
+
+    if (isset($_POST["get_grade_component_data"])) {
+        $id = $_POST["id"];
+
+        $grade_component_data = $db->select_one("grade_components", "id", $id);
+
+        echo json_encode($grade_component_data);
     }
 
     if (isset($_POST["update_admin_account"])) {
@@ -617,6 +636,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($_POST["update_student"])) {
         $student_number = $_POST["student_number"];
+        $course = $_POST["course"];
+        $year = $_POST["year"];
+        $section = $_POST["section"];
         $first_name = $_POST["first_name"];
         $middle_name = $_POST["middle_name"];
         $last_name = $_POST["last_name"];
@@ -689,6 +711,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $student_data = [
                 "student_number" => $student_number,
+                "course" => $course,
+                "year" => $year,
+                "section" => $section,
                 "first_name" => $first_name,
                 "middle_name" => $middle_name,
                 "last_name" => $last_name,
@@ -720,6 +745,168 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION["notification"] = [
             "title" => "Success!",
             "text" => "A student has been deleted successfully.",
+            "icon" => "success",
+        ];
+
+        echo json_encode(true);
+    }
+
+    if (isset($_POST["new_grade_component"])) {
+        $teacher_id = $_POST["teacher_id"];
+        $component = $_POST["component"];
+        $weight = $_POST["weight"];
+
+        $response = [
+            "component_ok" => true,
+            "weight_ok" => true,
+        ];
+
+        $current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $teacher_id);
+
+        if ($current_weight_sum + $weight > 100) {
+            $response["weight_ok"] = false;
+        } else {
+            $data = [
+                "uuid" => generate_uuid(),
+                "teacher_id" => $teacher_id,
+                "component" => $component,
+                "weight" => $weight,
+                "created_at" => $current_datetime,
+                "updated_at" => $current_datetime,
+            ];
+
+            if ($db->insert("grade_components", $data)) {
+                $_SESSION["notification"] = [
+                    "title" => "Success!",
+                    "text" => "A grade component has been added successfully.",
+                    "icon" => "success",
+                ];
+            } else {
+                $response["component_ok"] = false;
+            }
+        }
+
+        echo json_encode($response);
+    }
+
+    if (isset($_POST["update_grade_component"])) {
+        $id = $_POST["id"];
+        $teacher_id = $_POST["teacher_id"];
+        $component = $_POST["component"];
+        $weight = $_POST["weight"];
+        $old_weight = $_POST["old_weight"];
+
+        $response = [
+            "component_ok" => true,
+            "weight_ok" => true,
+        ];
+
+        $current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $teacher_id);
+
+        if ((intval($current_weight_sum) + intval($weight) - intval($old_weight))  > 100) {
+            $response["weight_ok"] = false;
+        } else {
+            $data = [
+                "component" => $component,
+                "weight" => $weight,
+                "updated_at" => $current_datetime,
+            ];
+
+            if ($db->update("grade_components", $data, "id", $id)) {
+                $_SESSION["notification"] = [
+                    "title" => "Success!",
+                    "text" => "A grade component has been updated successfully.",
+                    "icon" => "success",
+                ];
+            } else {
+                $response["component_ok"] = false;
+            }
+        }
+
+        echo json_encode($response);
+    }
+
+    if (isset($_POST["delete_grade_component"])) {
+        $id = $_POST["id"];
+
+        $db->delete("grade_components", "id", $id);
+
+        $_SESSION["notification"] = [
+            "title" => "Success!",
+            "text" => "A grade component has been deleted successfully.",
+            "icon" => "success",
+        ];
+
+        echo json_encode(true);
+    }
+
+    if (isset($_POST["check_grade_component_weight"])) {
+        $teacher_id = $_POST["teacher_id"];
+
+        $response = false;
+
+        $current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $teacher_id);
+
+        if ($current_weight_sum < 100) {
+            $response = true;
+        }
+
+        echo json_encode($response);
+    }
+
+    if (isset($_POST["new_student_grade"])) {
+        $teacher_id = $_POST["teacher_id"];
+        $student_id = $_POST["student_id"];
+        $subject_id = $_POST["subject_id"];
+        $grade_component_id = $_POST["grade_component_id"];
+        $course = $_POST["course"];
+        $year = $_POST["year"];
+        $semester = $_POST["semester"];
+        $grade = $_POST["grade"];
+
+        $sql = "SELECT id FROM student_grades WHERE student_id='" . $student_id . "' AND course='" . $course . "' AND year='" . $year . "' AND semester='" . $semester . "' AND subject_id='" . $subject_id . "' AND grade_component_id='" . $grade_component_id . "'";
+
+        if ($db->select_many(null, null, null, null, null, $sql)) {
+            $_SESSION["notification"] = [
+                "title" => "Oops..",
+                "text" => "This specific grade is already in the system.",
+                "icon" => "error",
+            ];
+        } else {
+            $data = [
+                "uuid" => generate_uuid(),
+                "teacher_id" => $teacher_id,
+                "student_id" => $student_id,
+                "subject_id" => $subject_id,
+                "grade_component_id" => $grade_component_id,
+                "course" => $course,
+                "year" => $year,
+                "semester" => $semester,
+                "grade" => $grade,
+                "created_at" => $current_datetime,
+                "updated_at" => $current_datetime,
+            ];
+
+            $db->insert("student_grades", $data);
+
+            $_SESSION["notification"] = [
+                "title" => "Success!",
+                "text" => "A grade has been added successfully.",
+                "icon" => "success",
+            ];
+        }
+
+        echo json_encode(true);
+    }
+
+    if (isset($_POST["delete_student_grade"])) {
+        $id = $_POST["id"];
+
+        $db->delete("student_grades", "id", $id);
+
+        $_SESSION["notification"] = [
+            "title" => "Success!",
+            "text" => "A student grade has been deleted successfully.",
             "icon" => "success",
         ];
 

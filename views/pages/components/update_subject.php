@@ -49,11 +49,7 @@
                                 </div>
                             </div>
                         </div>
-<<<<<<< HEAD
                         <div class="row">
-=======
-                        <div class="row mb-3">
->>>>>>> c87f6604729a51555f2a6c46925ed895a584d5a5
                             <div class="col-lg-6">
                                 <label for="update_subject_course">Course</label>
                                 <select id="update_subject_course" class="form-select">

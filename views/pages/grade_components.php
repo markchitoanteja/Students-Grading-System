@@ -22,8 +22,8 @@ if ($_SESSION["user_type"] != "teacher") {
                     </ol>
                 </nav>
             </div>
-            <div class="col-6">
-                <button class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#new_grade_component_modal"><i class="bi bi-plus"></i> New Component</button>
+            <div class="col-6"> 
+                <button class="btn btn-primary float-end" id="new_grade_component" teacher_id="<?= $_SESSION["user_id"] ?>"><i class="bi bi-plus"></i> New Component</button>
             </div>
         </div>
     </div>
@@ -44,7 +44,7 @@ if ($_SESSION["user_type"] != "teacher") {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if ($grade_components = $db->select_all("grade_components", "component", "ASC")): ?>
+                                <?php if ($grade_components = $db->select_many("grade_components", "teacher_id", $_SESSION["user_id"], "component", "ASC")): ?>
                                     <?php foreach ($grade_components as $grade_component): ?>
                                         <tr>
                                             <td><?= $grade_component["component"] ?></td>
@@ -65,7 +65,7 @@ if ($_SESSION["user_type"] != "teacher") {
     </section>
 </main>
 
-<?php include_once "../views/pages/components/new_course.php" ?>
-<?php include_once "../views/pages/components/update_course.php" ?>
+<?php include_once "../views/pages/components/new_grade_component.php" ?>
+<?php include_once "../views/pages/components/update_grade_component.php" ?>
 
 <?php include_once "../views/pages/templates/footer.php" ?>
