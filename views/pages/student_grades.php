@@ -1,5 +1,5 @@
 <?php 
-if ($_SESSION["user_type"] != "admin"){
+if ($_SESSION["user_type"] != "teacher"){
     http_response_code(403);
 
     header("location: 403");
@@ -14,11 +14,11 @@ if ($_SESSION["user_type"] != "admin"){
     <div class="pagetitle">
         <div class="row">
             <div class="col-6">
-                <h1>Courses</h1>
+                <h1>Grades</h1>
                 <nav>
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="/">Home</a></li>
-                        <li class="breadcrumb-item active">Courses</li>
+                        <li class="breadcrumb-item active">Grades</li>
                     </ol>
                 </nav>
             </div>

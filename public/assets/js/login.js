@@ -28,7 +28,7 @@ jQuery(document).ready(function () {
                 contentType: false,
                 success: function (response) {
                     if (response) {
-                        location.href = "dashboard";
+                        location.href = "main";
                     } else {
                         setTimeout(function () {
                             $("#login_message").removeClass("d-none");

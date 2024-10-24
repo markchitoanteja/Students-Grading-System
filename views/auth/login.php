@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (isset($_SESSION["user_id"])) {
-    header("location: dashboard");
+    header("location: main");
 
     exit();
 }
@@ -38,7 +38,7 @@ if (isset($_SESSION["user_id"])) {
                 <div class="card-body">
                     <div class="row">
                         <div class="col-7">
-                            <h4 class="mb-3">Administrator Login</h4>
+                            <h4 class="mb-3">User Login</h4>
 
                             <form action="javascript:void(0)" id="login_form">
                                 <div class="form-group mb-3">

@@ -1,3 +1,13 @@
+<?php 
+if ($_SESSION["user_type"] != "admin"){
+    http_response_code(403);
+
+    header("location: 403");
+
+    exit();
+}
+?>
+
 <?php include_once "../views/pages/templates/header.php" ?>
 
 <main id="main" class="main">

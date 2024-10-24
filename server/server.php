@@ -44,19 +44,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hashed_password = $user["password"];
 
             if (password_verify($password, $hashed_password)) {
-                if ($user["user_type"] == "admin") {
-                    $_SESSION["user_id"] = $user["id"];
+                $_SESSION["user_id"] = $user["id"];
+                $_SESSION["user_type"] = $user["user_type"];
 
-                    if ($remember_me == "true") {
-                        $_SESSION["username"] = $username;
-                        $_SESSION["password"] = $password;
-                    } else {
-                        unset($_SESSION["username"]);
-                        unset($_SESSION["password"]);
-                    }
-
-                    $response = true;
+                if ($remember_me == "true") {
+                    $_SESSION["username"] = $username;
+                    $_SESSION["password"] = $password;
+                } else {
+                    unset($_SESSION["username"]);
+                    unset($_SESSION["password"]);
                 }
+
+                $response = true;
             }
         }
 

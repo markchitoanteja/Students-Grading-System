@@ -99,53 +99,64 @@ if (!isset($_SESSION["user_id"])) {
 
     <aside id="sidebar" class="sidebar">
         <ul class="sidebar-nav" id="sidebar-nav">
-            <!-- Dashboard -->
-            <li class="nav-item">
-                <a class="nav-link <?= $current_page != "dashboard" ? "collapsed" : null ?>" href="dashboard">
-                    <i class="bi bi-grid-fill"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
+            <?php if ($_SESSION["user_type"] == "admin"): ?>
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link <?= $current_page != "dashboard" ? "collapsed" : null ?>" href="dashboard">
+                        <i class="bi bi-grid-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
 
-            <!-- Courses -->
-            <li class="nav-item">
-                <a class="nav-link <?= $current_page != "courses" ? "collapsed" : null ?>" href="courses">
-                    <i class="bi bi-journal-bookmark-fill"></i>
-                    <span>Courses</span>
-                </a>
-            </li>
+                <!-- Courses -->
+                <li class="nav-item">
+                    <a class="nav-link <?= $current_page != "courses" ? "collapsed" : null ?>" href="courses">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                        <span>Courses</span>
+                    </a>
+                </li>
 
-            <!-- Subjects -->
-            <li class="nav-item">
-                <a class="nav-link <?= $current_page != "subjects" ? "collapsed" : null ?>" href="subjects">
-                    <i class="bi bi-book-fill"></i>
-                    <span>Subjects</span>
-                </a>
-            </li>
+                <!-- Subjects -->
+                <li class="nav-item">
+                    <a class="nav-link <?= $current_page != "subjects" ? "collapsed" : null ?>" href="subjects">
+                        <i class="bi bi-book-fill"></i>
+                        <span>Subjects</span>
+                    </a>
+                </li>
 
-            <!-- Teachers -->
-            <li class="nav-item">
-                <a class="nav-link <?= $current_page != "teachers" ? "collapsed" : null ?>" href="teachers">
-                    <i class="bi bi-person-badge-fill"></i>
-                    <span>Teachers</span>
-                </a>
-            </li>
+                <!-- Teachers -->
+                <li class="nav-item">
+                    <a class="nav-link <?= $current_page != "teachers" ? "collapsed" : null ?>" href="teachers">
+                        <i class="bi bi-person-badge-fill"></i>
+                        <span>Teachers</span>
+                    </a>
+                </li>
 
-            <!-- Students -->
-            <li class="nav-item">
-                <a class="nav-link <?= $current_page != "students" ? "collapsed" : null ?>" href="students">
-                    <i class="bi bi-people-fill"></i>
-                    <span>Students</span>
-                </a>
-            </li>
+                <!-- Students -->
+                <li class="nav-item">
+                    <a class="nav-link <?= $current_page != "students" ? "collapsed" : null ?>" href="students">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Students</span>
+                    </a>
+                </li>
+            <?php endif ?>
 
-            <!-- Grades -->
-            <li class="nav-item">
-                <a class="nav-link <?= $current_page != "grades" ? "collapsed" : null ?>" href="grades">
-                    <i class="bi bi-bar-chart-fill"></i>
-                    <span>Grades</span>
-                </a>
-            </li>
+            <?php if ($_SESSION["user_type"] == "teacher"): ?>
+                <!-- Grade Components -->
+                <li class="nav-item">
+                    <a class="nav-link <?= $current_page != "grade_components" ? "collapsed" : null ?>" href="grade_components">
+                        <i class="bi bi-pie-chart-fill"></i>
+                        <span>Grade Components</span>
+                    </a>
+                </li>
+                <!-- Student Grades -->
+                <li class="nav-item">
+                    <a class="nav-link <?= $current_page != "student_grades" ? "collapsed" : null ?>" href="student_grades">
+                        <i class="bi bi-bar-chart-fill"></i>
+                        <span>Student Grades</span>
+                    </a>
+                </li>
+            <?php endif ?>
 
             <!-- Logout -->
             <li class="nav-item">

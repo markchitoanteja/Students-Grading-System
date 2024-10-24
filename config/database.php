@@ -18,6 +18,7 @@ class Database
         $this->create_courses_table();
         $this->create_subjects_table();
         $this->create_grades_table();
+        $this->create_grade_components_table();
         $this->create_logs_table();
         $this->insert_admin_data();
     }
@@ -130,6 +131,23 @@ class Database
         }
     }
 
+    private function create_grade_components_table()
+    {
+        $sql = "CREATE TABLE IF NOT EXISTS grade_components (
+            id INT(11) AUTO_INCREMENT PRIMARY KEY,
+            uuid VARCHAR(36) NOT NULL UNIQUE,
+            teacher_id INT(11) NOT NULL,
+            component VARCHAR(255) NOT NULL,
+            weight FLOAT(11,2) NOT NULL,
+            created_at DATETIME NOT NULL,
+            updated_at DATETIME NOT NULL
+        )";
+
+        if (!$this->connection->query($sql) === TRUE) {
+            die("Error creating users table: " . $this->connection->error);
+        }
+    }
+    
     private function create_grades_table()
     {
         $sql = "CREATE TABLE IF NOT EXISTS grades (
