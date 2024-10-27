@@ -1,16 +1,51 @@
 <?php
 if ($_SESSION["user_type"] != "teacher") {
     http_response_code(403);
-
     header("location: 403");
-
     exit();
 }
 
-$current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $_SESSION["user_id"]);
-?>
+include_once "../views/pages/templates/header.php";
 
-<?php include_once "../views/pages/templates/header.php" ?>
+$teacher_id = $_SESSION["user_id"];
+
+$grade_components = $db->select_all("grade_components");
+
+$sql = "
+    SELECT students.id AS student_id, students.student_number, users.name AS student_name,
+           sg.course, sg.year, sg.semester, subjects.description AS subject,
+           gc.id AS component_id, sg.grade AS grade
+    FROM student_grades sg
+    INNER JOIN students ON students.account_id = sg.student_id
+    INNER JOIN users ON users.id = students.account_id
+    INNER JOIN subjects ON subjects.id = sg.subject_id
+    RIGHT JOIN grade_components gc ON gc.id = sg.grade_component_id
+    WHERE sg.teacher_id = '$teacher_id'
+    ORDER BY students.id, gc.id
+";
+
+$students_grades = $db->run_custom_query($sql);
+
+$display_data = [];
+foreach ($students_grades as $row) {
+    $student_id = $row['student_id'];
+    $component_id = $row['component_id'];
+    $grade = isset($row['grade']) ? $row['grade'] : 'Unavailable';
+
+    if (!isset($display_data[$student_id])) {
+        $display_data[$student_id] = [
+            'student_number' => $row['student_number'],
+            'student_name' => $row['student_name'],
+            'course' => $row['course'],
+            'year' => $row['year'],
+            'semester' => $row['semester'],
+            'subject' => $row['subject'],
+            'grades' => []
+        ];
+    }
+    $display_data[$student_id]['grades'][$component_id] = $grade; // Store the grade for each component
+}
+?>
 
 <main id="main" class="main">
     <div class="pagetitle">
@@ -47,19 +82,51 @@ $current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if ($student_grades = $db->select_many("student_grades", "teacher_id", $_SESSION["user_id"], "id", "DESC")): ?>
-                                    <?php foreach ($student_grades as $student_grade): ?>
-                                        <tr>
-                                            <td><?= $db->select_one("students", "account_id", $student_grade["student_id"])["student_number"] ?></td>
-                                            <td><?= $db->select_one("users", "id", $student_grade["student_id"])["name"] ?></td>
-                                            <td><?= $student_grade["course"] ?></td>
-                                            <td><?= $student_grade["year"] ?> Year</td>
-                                            <td><?= $student_grade["semester"] ?> Semester</td>
-                                            <td><?= $db->select_one("subjects", "id", $student_grade["subject_id"])["description"] ?></td>
-                                            <td><?= $student_grade["grade"] ?>%</td>
-                                        </tr>
-                                    <?php endforeach ?>
-                                <?php endif ?>
+                                <?php foreach ($display_data as $student): ?>
+                                    <?php
+                                    // Initialize an empty string for grades
+                                    $grades_text = '';
+                                    $final_grade = 0;
+                                    $num_components = 0; // Count of available grades
+                                    $all_components_available = true; // Flag to track if all components have grades
+
+                                    // Loop through all grade components to gather individual grades
+                                    foreach ($grade_components as $component) {
+                                        $component_id = $component['id'];
+                                        // Check if the specific grade exists for this component
+                                        $grade = isset($student['grades'][$component_id]) ? $student['grades'][$component_id] : 'Unavailable';
+
+                                        // Append the component's name and grade to the grades text
+                                        $grades_text .= htmlspecialchars($component['component']) . ": " . htmlspecialchars($grade) . "<br>";
+
+                                        // Check if the grade is unavailable
+                                        if ($grade === 'Unavailable') {
+                                            $all_components_available = false; // Mark the flag as false
+                                        } else {
+                                            $final_grade += (float)$grade;
+                                            $num_components++; // Increment the count of available grades
+                                        }
+                                    }
+                                    ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($student['student_number']) ?></td>
+                                        <td><?= htmlspecialchars($student['student_name']) ?></td>
+                                        <td><?= htmlspecialchars($student['course']) ?></td>
+                                        <td><?= htmlspecialchars($student['year']) ?> Year</td>
+                                        <td><?= htmlspecialchars($student['semester']) ?> Semester</td>
+                                        <td><?= htmlspecialchars($student['subject']) ?></td>
+                                        <td>
+                                            <?php
+                                            // Set final grade to "Unavailable" if not all components are available
+                                            if ($all_components_available && $num_components > 0) {
+                                                echo round($final_grade / $num_components, 2) . "%";
+                                            } else {
+                                                echo "Unavailable";
+                                            }
+                                            ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
@@ -68,8 +135,5 @@ $current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $
         </div>
     </section>
 </main>
-
-<?php include_once "../views/pages/components/new_student_grade.php" ?>
-<?php include_once "../views/pages/components/update_course.php" ?>
 
 <?php include_once "../views/pages/templates/footer.php" ?>

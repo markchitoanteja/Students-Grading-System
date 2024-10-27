@@ -139,6 +139,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($grade_component_data);
     }
 
+    if (isset($_POST["get_student_grade_data"])) {
+        $id = $_POST["id"];
+
+        $student_grade_data = $db->select_one("student_grades", "id", $id);
+
+        echo json_encode($student_grade_data);
+    }
+
     if (isset($_POST["update_admin_account"])) {
         $id = $_POST["id"];
         $name = $_POST["name"];
@@ -869,7 +877,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($db->select_many(null, null, null, null, null, $sql)) {
             $_SESSION["notification"] = [
                 "title" => "Oops..",
-                "text" => "This specific grade is already in the system.",
+                "text" => "This specific grade is already in the system for another record.",
                 "icon" => "error",
             ];
         } else {
@@ -892,6 +900,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION["notification"] = [
                 "title" => "Success!",
                 "text" => "A grade has been added successfully.",
+                "icon" => "success",
+            ];
+        }
+
+        echo json_encode(true);
+    }
+
+    if (isset($_POST["update_student_grade"])) {
+        $id = $_POST["id"];
+        $teacher_id = $_POST["teacher_id"];
+        $student_id = $_POST["student_id"];
+        $subject_id = $_POST["subject_id"];
+        $grade_component_id = $_POST["grade_component_id"];
+        $course = $_POST["course"];
+        $year = $_POST["year"];
+        $semester = $_POST["semester"];
+        $grade = $_POST["grade"];
+
+        $sql = "SELECT id FROM student_grades WHERE student_id='" . $student_id . "' AND course='" . $course . "' AND year='" . $year . "' AND semester='" . $semester . "' AND subject_id='" . $subject_id . "' AND grade_component_id='" . $grade_component_id . "' AND id != '" . $id . "'";
+
+        if ($db->select_many(null, null, null, null, null, $sql)) {
+            $_SESSION["notification"] = [
+                "title" => "Oops..",
+                "text" => "This specific grade is already in the system for another record.",
+                "icon" => "error",
+            ];
+        } else {
+            $data = [
+                "teacher_id" => $teacher_id,
+                "student_id" => $student_id,
+                "subject_id" => $subject_id,
+                "grade_component_id" => $grade_component_id,
+                "course" => $course,
+                "year" => $year,
+                "semester" => $semester,
+                "grade" => $grade,
+                "updated_at" => $current_datetime,
+            ];
+
+            $db->update("student_grades", $data, "id", $id);
+
+            $_SESSION["notification"] = [
+                "title" => "Success!",
+                "text" => "The grade has been updated successfully.",
                 "icon" => "success",
             ];
         }

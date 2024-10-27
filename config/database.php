@@ -371,6 +371,13 @@ class Database
 
         return $result['total_sum'] ?? 0;
     }
+
+    public function run_custom_query($custom_sql)
+    {
+        $stmt = $this->connection->prepare($custom_sql);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
 }
 
 $db = new Database();

@@ -88,6 +88,6 @@ $current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $
 </main>
 
 <?php include_once "../views/pages/components/new_student_grade.php" ?>
-<?php include_once "../views/pages/components/update_course.php" ?>
+<?php include_once "../views/pages/components/update_student_grade.php" ?>
 
 <?php include_once "../views/pages/templates/footer.php" ?>
