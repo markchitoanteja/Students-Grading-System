@@ -17,4 +17,5 @@ $routes = [
     '403' => '../views/errors/403.php',
     '404' => '../views/errors/404.php',
     'no_function_yet' => '../views/errors/no_function_yet.php',
+    'trial_ended' => '../views/errors/trial_ended.php',
 ];

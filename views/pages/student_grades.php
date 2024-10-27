@@ -27,6 +27,7 @@ $sql = "
 $students_grades = $db->run_custom_query($sql);
 
 $display_data = [];
+
 foreach ($students_grades as $row) {
     $student_id = $row['student_id'];
     $component_id = $row['component_id'];
@@ -43,7 +44,27 @@ foreach ($students_grades as $row) {
             'grades' => []
         ];
     }
-    $display_data[$student_id]['grades'][$component_id] = $grade; // Store the grade for each component
+
+    $display_data[$student_id]['grades'][$component_id] = $grade;
+}
+
+function scale($percentage)
+{
+    if ($percentage >= 95) {
+        return 1.00;
+    } elseif ($percentage >= 90) {
+        return 1.25;
+    } elseif ($percentage >= 85) {
+        return 1.50;
+    } elseif ($percentage >= 80) {
+        return 1.75;
+    } elseif ($percentage >= 77) {
+        return 2.00;
+    } elseif ($percentage >= 75) {
+        return 3.00;
+    } else {
+        return 5.00;
+    }
 }
 ?>
 
@@ -79,32 +100,26 @@ foreach ($students_grades as $row) {
                                     <th>Semester</th>
                                     <th>Subject</th>
                                     <th>Final Grade</th>
+                                    <th>Scale</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($display_data as $student): ?>
                                     <?php
-                                    // Initialize an empty string for grades
                                     $grades_text = '';
                                     $final_grade = 0;
-                                    $num_components = 0; // Count of available grades
-                                    $all_components_available = true; // Flag to track if all components have grades
+                                    $num_components = 0;
+                                    $all_components_available = true;
 
-                                    // Loop through all grade components to gather individual grades
                                     foreach ($grade_components as $component) {
                                         $component_id = $component['id'];
-                                        // Check if the specific grade exists for this component
                                         $grade = isset($student['grades'][$component_id]) ? $student['grades'][$component_id] : 'Unavailable';
 
-                                        // Append the component's name and grade to the grades text
-                                        $grades_text .= htmlspecialchars($component['component']) . ": " . htmlspecialchars($grade) . "<br>";
-
-                                        // Check if the grade is unavailable
                                         if ($grade === 'Unavailable') {
-                                            $all_components_available = false; // Mark the flag as false
+                                            $all_components_available = false;
                                         } else {
                                             $final_grade += (float)$grade;
-                                            $num_components++; // Increment the count of available grades
+                                            $num_components++;
                                         }
                                     }
                                     ?>
@@ -117,9 +132,17 @@ foreach ($students_grades as $row) {
                                         <td><?= htmlspecialchars($student['subject']) ?></td>
                                         <td>
                                             <?php
-                                            // Set final grade to "Unavailable" if not all components are available
                                             if ($all_components_available && $num_components > 0) {
                                                 echo round($final_grade / $num_components, 2) . "%";
+                                            } else {
+                                                echo "Unavailable";
+                                            }
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            if ($all_components_available && $num_components > 0) {
+                                                echo scale(round($final_grade / $num_components, 2));
                                             } else {
                                                 echo "Unavailable";
                                             }

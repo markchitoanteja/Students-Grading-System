@@ -16,6 +16,28 @@ if (!isset($_SESSION["user_id"])) {
     $current_page = basename($_SERVER['REQUEST_URI']);
 
     $user_data = $db->select_one("users", "id", $_SESSION["user_id"]);
+
+    if ($_SESSION["user_type"] == "teacher") {
+        $teacher_student_data = $db->select_one("teachers", "account_id", $_SESSION["user_id"]);
+    }
+
+    if ($_SESSION["user_type"] == "student") {
+        $teacher_student_data = $db->select_one("students", "account_id", $_SESSION["user_id"]);
+    }
+
+    function get_initials($first_name)
+    {
+        $nameParts = explode(" ", $first_name);
+        $initials = "";
+
+        foreach ($nameParts as $part) {
+            if (!empty($part)) {
+                $initials .= strtoupper($part[0]) . ". ";
+            }
+        }
+
+        return trim($initials);
+    }
 }
 ?>
 
@@ -52,7 +74,7 @@ if (!isset($_SESSION["user_id"])) {
                 <li class="nav-item dropdown pe-3">
                     <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
                         <img src="assets/img/uploads/<?= $user_data["image"] ?>" alt="Profile" class="rounded-circle" style="width: 35px; height: 35px;">
-                        <span class="d-none d-md-block dropdown-toggle ps-2"><?= $user_data["name"] ?></span>
+                        <span class="d-none d-md-block dropdown-toggle ps-2"><?= $_SESSION["user_type"] != "admin" ? get_initials($teacher_student_data["first_name"]) . " " . $teacher_student_data["last_name"] : $user_data["name"] ?></span>
                     </a>
 
                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">

@@ -23,7 +23,7 @@
                         </div>
                         <div class="form-group mb-3">
                             <label for="account_settings_name">Name</label>
-                            <input type="text" class="form-control" id="account_settings_name" required>
+                            <input type="text" class="form-control" id="account_settings_name" required <?= $_SESSION["user_type"] != "admin" ? "readonly" : "" ?>>
                         </div>
                         <div class="form-group mb-3">
                             <label for="account_settings_username">Username</label>

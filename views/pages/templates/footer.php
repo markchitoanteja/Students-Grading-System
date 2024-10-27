@@ -7,7 +7,7 @@
             </div>
         </footer>
 
-        <a href="javascript:void(0)" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+        <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
         <script>
             var user_id = "<?= $_SESSION["user_id"] ?>";
