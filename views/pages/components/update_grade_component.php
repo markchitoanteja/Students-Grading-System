@@ -14,14 +14,25 @@
 
                     <div class="actual-form">
                         <div class="form-group mb-3">
+                            <label for="update_grade_component_subject_id">Subject</label>
+                            <select id="update_grade_component_subject_id" class="form-select" require>
+                                <?php if ($subjects = $db->select_all("subjects", "year", "ASC")): ?>
+                                    <?php foreach ($subjects as $subject): ?>
+                                        <option value="<?= $subject["id"] ?>"><?= $subject["description"] ?></option>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                            </select>
+                            <small class="text-danger d-none" id="error_new_grade_component_subject_id">Component is already in use in this subject!</small>
+                        </div>
+                        <div class="form-group mb-3">
                             <label for="update_grade_component_component">Component (eg. Quiz, Recitation, etc)</label>
                             <input type="text" class="form-control" id="update_grade_component_component" required>
-                            <small class="text-danger d-none" id="error_update_grade_component_component">Component is already in use!</small>
+                            <small class="text-danger d-none" id="error_update_grade_component_component">Component is already in use in this subject!</small>
                         </div>
                         <div class="form-group mb-3">
                             <label for="update_grade_component_weight">Weight (eg. 10%, 25%, etc)</label>
                             <input type="number" class="form-control" id="update_grade_component_weight" required>
-                            <small class="text-danger d-none" id="error_update_grade_component_weight">The total weight of grade components exceeds 100%</small>
+                            <small class="text-danger d-none" id="error_update_grade_component_weight">The total weight of grade components for this subject exceeds 100%</small>
                         </div>
                     </div>
                 </div>

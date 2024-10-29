@@ -1,43 +1,28 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+$current_page = basename($_SERVER['REQUEST_URI']);
+
+$user_data = $db->select_one("users", "id", $_SESSION["user_id"]);
+
+if ($_SESSION["user_type"] == "teacher") {
+    $teacher_student_data = $db->select_one("teachers", "account_id", $_SESSION["user_id"]);
 }
 
-if (!isset($_SESSION["user_id"])) {
-    $_SESSION["notification"] = [
-        "type" => "alert-danger bg-danger",
-        "message" => "You must login first!",
-    ];
+if ($_SESSION["user_type"] == "student") {
+    $teacher_student_data = $db->select_one("students", "account_id", $_SESSION["user_id"]);
+}
 
-    header("location: /");
+function get_initials($first_name)
+{
+    $nameParts = explode(" ", $first_name);
+    $initials = "";
 
-    exit();
-} else {
-    $current_page = basename($_SERVER['REQUEST_URI']);
-
-    $user_data = $db->select_one("users", "id", $_SESSION["user_id"]);
-
-    if ($_SESSION["user_type"] == "teacher") {
-        $teacher_student_data = $db->select_one("teachers", "account_id", $_SESSION["user_id"]);
-    }
-
-    if ($_SESSION["user_type"] == "student") {
-        $teacher_student_data = $db->select_one("students", "account_id", $_SESSION["user_id"]);
-    }
-
-    function get_initials($first_name)
-    {
-        $nameParts = explode(" ", $first_name);
-        $initials = "";
-
-        foreach ($nameParts as $part) {
-            if (!empty($part)) {
-                $initials .= strtoupper($part[0]) . ". ";
-            }
+    foreach ($nameParts as $part) {
+        if (!empty($part)) {
+            $initials .= strtoupper($part[0]) . ". ";
         }
-
-        return trim($initials);
     }
+
+    return trim($initials);
 }
 ?>
 
@@ -183,6 +168,16 @@ if (!isset($_SESSION["user_id"])) {
                     <a class="nav-link <?= $current_page != "student_grades" ? "collapsed" : null ?>" href="student_grades">
                         <i class="bi bi-bar-chart-fill"></i>
                         <span>Student Grades</span>
+                    </a>
+                </li>
+            <?php endif ?>
+
+            <?php if ($_SESSION["user_type"] == "student"): ?>
+                <!-- My Grades -->
+                <li class="nav-item">
+                    <a class="nav-link <?= $current_page != "my_grades" ? "collapsed" : null ?>" href="my_grades">
+                        <i class="bi bi-journal-text"></i>
+                        <span>My Grades</span>
                     </a>
                 </li>
             <?php endif ?>

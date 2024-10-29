@@ -9,7 +9,7 @@ if (!isset($_SESSION["user_id"])) {
 
     exit();
 } else {
-    if ($_SESSION["user_type"] != "teacher") {
+    if ($_SESSION["user_type"] != "student") {
         http_response_code(403);
         header("location: 403");
         exit();
@@ -17,7 +17,7 @@ if (!isset($_SESSION["user_id"])) {
 
     include_once "../views/pages/templates/header.php";
 
-    $teacher_id = $_SESSION["user_id"];
+    $student_id = $_SESSION["user_id"];
 
     $grade_components = $db->select_all("grade_components");
 
@@ -30,7 +30,7 @@ if (!isset($_SESSION["user_id"])) {
         INNER JOIN users ON users.id = students.account_id
         INNER JOIN subjects ON subjects.id = sg.subject_id
         RIGHT JOIN grade_components gc ON gc.id = sg.grade_component_id
-        WHERE sg.teacher_id = '$teacher_id'
+        WHERE sg.student_id = '$student_id'
         ORDER BY students.id, gc.id
     ";
 
@@ -83,11 +83,11 @@ if (!isset($_SESSION["user_id"])) {
     <div class="pagetitle">
         <div class="row">
             <div class="col-6">
-                <h1>Student Grades</h1>
+                <h1>My Grades</h1>
                 <nav>
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="/">Home</a></li>
-                        <li class="breadcrumb-item active">Student Grades</li>
+                        <li class="breadcrumb-item active">My Grades</li>
                     </ol>
                 </nav>
             </div>
@@ -104,9 +104,6 @@ if (!isset($_SESSION["user_id"])) {
                         <table class="table datatable">
                             <thead>
                                 <tr>
-                                    <th>Student Number</th>
-                                    <th>Student Name</th>
-                                    <th>Course</th>
                                     <th>Year</th>
                                     <th>Semester</th>
                                     <th>Subject</th>
@@ -135,9 +132,6 @@ if (!isset($_SESSION["user_id"])) {
                                     }
                                     ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($student['student_number']) ?></td>
-                                        <td><?= htmlspecialchars($student['student_name']) ?></td>
-                                        <td><?= htmlspecialchars($student['course']) ?></td>
                                         <td><?= htmlspecialchars($student['year']) ?> Year</td>
                                         <td><?= htmlspecialchars($student['semester']) ?> Semester</td>
                                         <td><?= htmlspecialchars($student['subject']) ?></td>

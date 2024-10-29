@@ -1,13 +1,24 @@
 <?php
-if ($_SESSION["user_type"] != "teacher") {
-    http_response_code(403);
+if (!isset($_SESSION["user_id"])) {
+    $_SESSION["notification"] = [
+        "type" => "alert-danger bg-danger",
+        "message" => "You must login first!",
+    ];
 
-    header("location: 403");
+    header("location: /");
 
     exit();
+} else {
+    if ($_SESSION["user_type"] != "teacher") {
+        http_response_code(403);
+
+        header("location: 403");
+
+        exit();
+    }
 }
 
-$current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $_SESSION["user_id"]);
+$able_to_put_grades = $db->check_subject_weight($_SESSION["user_id"]);
 ?>
 
 <?php include_once "../views/pages/templates/header.php" ?>
@@ -24,7 +35,7 @@ $current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $
                     </ol>
                 </nav>
             </div>
-            <?php if ($current_weight_sum == 100): ?>
+            <?php if ($able_to_put_grades): ?>
                 <div class="col-6">
                     <button class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#new_student_grade_modal"><i class="bi bi-plus"></i> New Grade</button>
                 </div>
@@ -35,9 +46,9 @@ $current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $
     <section class="section">
         <div class="row">
             <div class="col-lg-12">
-                <?php if ($current_weight_sum < 100): ?>
+                <?php if (!$able_to_put_grades): ?>
                     <div class="py-5">
-                        <h1 class="text-center text-muted">You need to complete 100% of the grade components first.</h1>
+                        <h1 class="text-center text-muted">You need to complete 100% of the grade components for at least one subject.</h1>
                     </div>
                 <?php else: ?>
                     <div class="card">

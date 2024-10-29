@@ -1,10 +1,21 @@
 <?php
-if ($_SESSION["user_type"] != "teacher") {
-    http_response_code(403);
+if (!isset($_SESSION["user_id"])) {
+    $_SESSION["notification"] = [
+        "type" => "alert-danger bg-danger",
+        "message" => "You must login first!",
+    ];
 
-    header("location: 403");
+    header("location: /");
 
     exit();
+} else {
+    if ($_SESSION["user_type"] != "teacher") {
+        http_response_code(403);
+
+        header("location: 403");
+
+        exit();
+    }
 }
 ?>
 
@@ -39,6 +50,7 @@ if ($_SESSION["user_type"] != "teacher") {
                             <thead>
                                 <tr>
                                     <th>Component</th>
+                                    <th>Subject</th>
                                     <th>Weight</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
@@ -48,6 +60,7 @@ if ($_SESSION["user_type"] != "teacher") {
                                     <?php foreach ($grade_components as $grade_component): ?>
                                         <tr>
                                             <td><?= $grade_component["component"] ?></td>
+                                            <td><?= $db->select_one("subjects", "id", $grade_component["subject_id"])["description"] ?></td>
                                             <td><?= $grade_component["weight"] ?>%</td>
                                             <td class="text-center">
                                                 <i class="bi bi-pencil-fill text-primary me-1 update_grade_component" role="button" grade_component_id="<?= $grade_component["id"] ?>"></i>

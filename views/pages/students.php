@@ -1,10 +1,21 @@
 <?php 
-if ($_SESSION["user_type"] != "admin"){
-    http_response_code(403);
+if (!isset($_SESSION["user_id"])) {
+    $_SESSION["notification"] = [
+        "type" => "alert-danger bg-danger",
+        "message" => "You must login first!",
+    ];
 
-    header("location: 403");
+    header("location: /");
 
     exit();
+} else {
+    if ($_SESSION["user_type"] != "admin") {
+        http_response_code(403);
+
+        header("location: 403");
+
+        exit();
+    }
 }
 ?>
 

@@ -67,11 +67,7 @@
                                 <div class="form-group">
                                     <label for="update_student_grade_grade_component_id">Grade Component</label>
                                     <select id="update_student_grade_grade_component_id" class="form-select" required>
-                                        <?php if ($grade_components = $db->select_many("grade_components", "teacher_id", $_SESSION["user_id"], "component", "ASC")): ?>
-                                            <?php foreach ($grade_components as $grade_component): ?>
-                                                <option value="<?= $grade_component["id"] ?>"><?= $grade_component["component"] ?></option>
-                                            <?php endforeach ?>
-                                        <?php endif ?>
+                                        <!-- Data from AJAX -->
                                     </select>
                                 </div>
                             </div>
@@ -108,6 +104,7 @@
                 <div class="modal-footer">
                     <input type="hidden" id="update_student_grade_teacher_id" value="<?= $_SESSION["user_id"] ?>">
                     <input type="hidden" id="update_student_grade_old_grade">
+                    <input type="hidden" id="update_student_grade_old_subject_id">
                     <input type="hidden" id="update_student_grade_old_grade_component_id">
                     <input type="hidden" id="update_student_grade_id">
 

@@ -137,7 +137,8 @@ class Database
             id INT(11) AUTO_INCREMENT PRIMARY KEY,
             uuid VARCHAR(36) NOT NULL UNIQUE,
             teacher_id INT(11) NOT NULL,
-            component VARCHAR(255) NOT NULL UNIQUE,
+            subject_id INT(11) NOT NULL,
+            component VARCHAR(255) NOT NULL,
             weight INT(11) NOT NULL,
             created_at DATETIME NOT NULL,
             updated_at DATETIME NOT NULL
@@ -358,24 +359,28 @@ class Database
         }
     }
 
-    public function get_sum($table_name, $column_name, $condition_column, $condition_value)
+    public function check_subject_weight($teacher_id)
     {
-        $sql = "SELECT SUM($column_name) as total_sum FROM $table_name WHERE $condition_column = ?";
-        $stmt = $this->connection->prepare($sql);
+        $sql = "SELECT subject_id, SUM(weight) as total_weight 
+            FROM grade_components 
+            WHERE teacher_id = ? 
+            GROUP BY subject_id 
+            HAVING total_weight = 100";
 
-        $type = is_int($condition_value) ? 'i' : 's';
-        $stmt->bind_param($type, $condition_value);
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bind_param('i', $teacher_id);
 
         $stmt->execute();
-        $result = $stmt->get_result()->fetch_assoc();
+        $stmt->store_result();
 
-        return $result['total_sum'] ?? 0;
+        return $stmt->num_rows > 0;
     }
 
     public function run_custom_query($custom_sql)
     {
         $stmt = $this->connection->prepare($custom_sql);
         $stmt->execute();
+        
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 }

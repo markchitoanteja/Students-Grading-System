@@ -68,13 +68,8 @@
                             <div class="col-lg-6">
                                 <div class="form-group">
                                     <label for="new_student_grade_grade_component_id">Grade Component</label>
-                                    <select id="new_student_grade_grade_component_id" class="form-select" required>
-                                        <option value selected disabled></option>
-                                        <?php if ($grade_components = $db->select_many("grade_components", "teacher_id", $_SESSION["user_id"], "component", "ASC")): ?>
-                                            <?php foreach ($grade_components as $grade_component): ?>
-                                                <option value="<?= $grade_component["id"] ?>"><?= $grade_component["component"] ?></option>
-                                            <?php endforeach ?>
-                                        <?php endif ?>
+                                    <select id="new_student_grade_grade_component_id" class="form-select" required disabled>
+                                        <!-- Data from AJAX -->
                                     </select>
                                 </div>
                             </div>

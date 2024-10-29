@@ -11,6 +11,7 @@ $routes = [
     'grade_components' => '../views/pages/grade_components.php',
     'grade_entries' => '../views/pages/grade_entries.php',
     'student_grades' => '../views/pages/student_grades.php',
+    'my_grades' => '../views/pages/my_grades.php',
 
     'server' => '../server/server.php',
 

@@ -1529,39 +1529,12 @@ jQuery(document).ready(function () {
     })
 
     $("#new_grade_component").click(function () {
-        const teacher_id = $(this).attr("teacher_id");
-
-        var formData = new FormData();
-
-        formData.append('check_grade_component_weight', true);
-        formData.append('teacher_id', teacher_id);
-
-        $.ajax({
-            url: 'server',
-            data: formData,
-            type: 'POST',
-            dataType: 'JSON',
-            processData: false,
-            contentType: false,
-            success: function (response) {
-                if (response) {
-                    $("#new_grade_component_modal").modal("show");
-                } else {
-                    Swal.fire({
-                        title: "Oops...",
-                        text: "The total weight of grade components has reached the maximum of 100%.",
-                        icon: "error"
-                    });
-                }
-            },
-            error: function (_, _, error) {
-                console.error(error);
-            }
-        });
+        $("#new_grade_component_modal").modal("show");
     })
 
     $("#new_grade_component_form").submit(function () {
         const teacher_id = $("#new_grade_component_teacher_id").val();
+        const subject_id = $("#new_grade_component_subject_id").val();
         const component = $("#new_grade_component_component").val();
         const weight = $("#new_grade_component_weight").val();
 
@@ -1573,6 +1546,7 @@ jQuery(document).ready(function () {
 
         var formData = new FormData();
 
+        formData.append('subject_id', subject_id);
         formData.append('teacher_id', teacher_id);
         formData.append('component', component);
         formData.append('weight', weight);
@@ -1604,6 +1578,9 @@ jQuery(document).ready(function () {
                     }
 
                     if (!response.component_ok) {
+                        $("#new_grade_component_subject_id").addClass("is-invalid");
+                        $("#error_new_grade_component_subject_id").removeClass("d-none");
+
                         $("#new_grade_component_component").addClass("is-invalid");
                         $("#error_new_grade_component_component").removeClass("d-none");
 
@@ -1617,7 +1594,16 @@ jQuery(document).ready(function () {
         });
     })
 
+    $("#new_grade_component_subject_id").change(function () {
+        $("#new_grade_component_subject_id").removeClass("is-invalid");
+        $("#error_new_grade_component_subject_id").addClass("d-none");
+        $("#new_grade_component_component").removeClass("is-invalid");
+        $("#error_new_grade_component_component").addClass("d-none");
+    })
+
     $("#new_grade_component_component").keydown(function () {
+        $("#new_grade_component_subject_id").removeClass("is-invalid");
+        $("#error_new_grade_component_subject_id").addClass("d-none");
         $("#new_grade_component_component").removeClass("is-invalid");
         $("#error_new_grade_component_component").addClass("d-none");
     })
@@ -1650,6 +1636,7 @@ jQuery(document).ready(function () {
             contentType: false,
             success: function (response) {
                 if (response) {
+                    $("#update_grade_component_subject_id").val(response.subject_id);
                     $("#update_grade_component_component").val(response.component);
                     $("#update_grade_component_weight").val(response.weight);
                     $("#update_grade_component_old_weight").val(response.weight);
@@ -1707,6 +1694,7 @@ jQuery(document).ready(function () {
 
     $("#update_grade_component_form").submit(function () {
         const id = $("#update_grade_component_id").val();
+        const subject_id = $("#update_grade_component_subject_id").val();
         const teacher_id = $("#update_grade_component_teacher_id").val();
         const component = $("#update_grade_component_component").val();
         const weight = $("#update_grade_component_weight").val();
@@ -1721,6 +1709,7 @@ jQuery(document).ready(function () {
         var formData = new FormData();
 
         formData.append('id', id);
+        formData.append('subject_id', subject_id);
         formData.append('teacher_id', teacher_id);
         formData.append('component', component);
         formData.append('weight', weight);
@@ -1753,6 +1742,9 @@ jQuery(document).ready(function () {
                     }
 
                     if (!response.component_ok) {
+                        $("#update_grade_component_subject_id").addClass("is-invalid");
+                        $("#error_update_grade_component_subject_id").removeClass("d-none");
+
                         $("#update_grade_component_component").addClass("is-invalid");
                         $("#error_update_grade_component_component").removeClass("d-none");
 
@@ -1766,7 +1758,18 @@ jQuery(document).ready(function () {
         });
     })
 
+    $("#update_grade_component_subject_id").change(function () {
+        $("#update_grade_component_subject_id").removeClass("is-invalid");
+        $("#error_update_grade_component_subject_id").addClass("d-none");
+
+        $("#update_grade_component_component").removeClass("is-invalid");
+        $("#error_update_grade_component_component").addClass("d-none");
+    })
+
     $("#update_grade_component_component").keydown(function () {
+        $("#update_grade_component_subject_id").removeClass("is-invalid");
+        $("#error_update_grade_component_subject_id").addClass("d-none");
+
         $("#update_grade_component_component").removeClass("is-invalid");
         $("#error_update_grade_component_component").addClass("d-none");
     })
@@ -1963,6 +1966,43 @@ jQuery(document).ready(function () {
         $('#new_student_grade_grade').removeAttr("disabled");
 
         $('#grade_calculator').addClass('d-none');
+    })
+
+    $('#new_student_grade_subject_id').change(function () {
+        const teacher_id = user_id;
+        const subject_id = $(this).val();
+
+        var formData = new FormData();
+
+        formData.append('teacher_id', teacher_id);
+        formData.append('subject_id', subject_id);
+
+        formData.append('get_grade_component_data_by_teacher_id_and_subject_id', true);
+
+        $.ajax({
+            url: 'server',
+            data: formData,
+            type: 'POST',
+            dataType: 'JSON',
+            processData: false,
+            contentType: false,
+            success: function (grade_components) {
+                $('#new_student_grade_grade_component_id').removeAttr("disabled");
+                $('#new_student_grade_grade_component_id').empty();
+                $('#new_student_grade_grade_component_id').append("<option value selected disabled></option>");
+
+                $('#grade_calculator').addClass('d-none');
+
+                if (grade_components) {
+                    $.each(grade_components, function (_, grade_component) {
+                        $('#new_student_grade_grade_component_id').append('<option value="' + grade_component.id + '">' + grade_component.component + '</option>');
+                    });
+                }
+            },
+            error: function (_, _, error) {
+                console.error(error);
+            }
+        });
     })
 
     $('#new_student_grade_grade').focus(function () {
@@ -2194,7 +2234,7 @@ jQuery(document).ready(function () {
                                     $("#update_student_grade_year").append(new Option(optionText + " Year", optionText));
                                 }
 
-                                $("#update_student_grade_year").val(response_2.year);
+                                $("#update_student_grade_year").val(response.year);
                                 $("#update_student_grade_semester").val(response.semester);
 
                                 const grade_course = $("#update_student_grade_course").val();
@@ -2227,16 +2267,49 @@ jQuery(document).ready(function () {
                                                 });
 
                                                 $("#update_student_grade_subject_id").val(response.subject_id);
-                                                $("#update_student_grade_grade_component_id").val(response.grade_component_id);
 
-                                                $('#update_student_grade_grade').removeAttr("disabled");
-                                                $("#update_student_grade_grade").val(response.grade);
+                                                const teacher_id = user_id;
+                                                const subject_id = response.subject_id;
 
-                                                $("#update_student_grade_old_grade").val(response.grade);
-                                                $("#update_student_grade_old_grade_component_id").val(response.grade_component_id);
-                                                $("#update_student_grade_id").val(response.id);
+                                                var formData_5 = new FormData();
 
-                                                $('#update_grade_calculator').addClass('d-none');
+                                                formData_5.append('teacher_id', teacher_id);
+                                                formData_5.append('subject_id', subject_id);
+
+                                                formData_5.append('get_grade_component_data_by_teacher_id_and_subject_id', true);
+
+                                                $.ajax({
+                                                    url: 'server',
+                                                    data: formData_5,
+                                                    type: 'POST',
+                                                    dataType: 'JSON',
+                                                    processData: false,
+                                                    contentType: false,
+                                                    success: function (grade_components) {
+                                                        $('#update_student_grade_grade_component_id').removeAttr("disabled");
+                                                        $('#update_student_grade_grade_component_id').empty();
+
+                                                        if (grade_components) {
+                                                            $.each(grade_components, function (_, grade_component) {
+                                                                $('#update_student_grade_grade_component_id').append('<option value="' + grade_component.id + '">' + grade_component.component + '</option>');
+                                                            });
+                                                        }
+
+                                                        $("#update_student_grade_grade_component_id").val(response.grade_component_id);
+                                                        $('#update_student_grade_grade').removeAttr("disabled");
+                                                        $("#update_student_grade_grade").val(response.grade);
+
+                                                        $("#update_student_grade_old_grade").val(response.grade);
+                                                        $("#update_student_grade_old_grade_component_id").val(response.grade_component_id);
+                                                        $("#update_student_grade_old_subject_id").val(response.subject_id);
+                                                        $("#update_student_grade_id").val(response.id);
+
+                                                        $('#update_grade_calculator').addClass('d-none');
+                                                    },
+                                                    error: function (_, _, error) {
+                                                        console.error(error);
+                                                    }
+                                                });
                                             }
                                         },
                                         error: function (_, _, error) {
@@ -2456,10 +2529,58 @@ jQuery(document).ready(function () {
         if ($(this).val() == old_grade_component_id) {
             $('#update_student_grade_grade').val(old_grade);
         } else {
-            $('#update_student_grade_grade').val(0);
+            $('#update_student_grade_grade').val("");
         }
 
         $('#update_grade_calculator').addClass('d-none');
+    })
+
+    $('#update_student_grade_subject_id').change(function () {
+        const teacher_id = user_id;
+        const subject_id = $(this).val();
+
+        var formData = new FormData();
+
+        formData.append('teacher_id', teacher_id);
+        formData.append('subject_id', subject_id);
+
+        formData.append('get_grade_component_data_by_teacher_id_and_subject_id', true);
+
+        $.ajax({
+            url: 'server',
+            data: formData,
+            type: 'POST',
+            dataType: 'JSON',
+            processData: false,
+            contentType: false,
+            success: function (grade_components) {
+                $('#update_student_grade_grade_component_id').removeAttr("disabled");
+                $('#update_student_grade_grade_component_id').empty();
+                $('#update_student_grade_grade_component_id').append("<option value selected disabled></option>");
+
+                $('#grade_calculator').addClass('d-none');
+
+                if (grade_components) {
+                    $.each(grade_components, function (_, grade_component) {
+                        $('#update_student_grade_grade_component_id').append('<option value="' + grade_component.id + '">' + grade_component.component + '</option>');
+                    });
+                }
+
+                const old_subject_id = $("#update_student_grade_old_subject_id").val();
+                const old_grade = $("#update_student_grade_old_grade").val();
+                const old_grade_component_id = $("#update_student_grade_old_grade_component_id").val();
+
+                if (subject_id == old_subject_id) {
+                    $("#update_student_grade_grade_component_id").val(old_grade_component_id);
+                    $("#update_student_grade_grade").val(old_grade);
+                } else {
+                    $("#update_student_grade_grade").val("");
+                }
+            },
+            error: function (_, _, error) {
+                console.error(error);
+            }
+        });
     })
 
     $('#update_student_grade_grade').focus(function () {

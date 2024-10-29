@@ -139,6 +139,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($grade_component_data);
     }
 
+    if (isset($_POST["get_grade_component_data_by_teacher_id_and_subject_id"])) {
+        $teacher_id = $_POST["teacher_id"];
+        $subject_id = $_POST["subject_id"];
+
+        $sql = "SELECT * FROM grade_components WHERE teacher_id='" . $teacher_id . "' AND subject_id='" . $subject_id . "'";
+        $grade_component_data = $db->run_custom_query($sql);
+
+        echo json_encode($grade_component_data);
+    }
+
     if (isset($_POST["get_student_grade_data"])) {
         $id = $_POST["id"];
 
@@ -760,6 +770,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (isset($_POST["new_grade_component"])) {
+        $subject_id = $_POST["subject_id"];
         $teacher_id = $_POST["teacher_id"];
         $component = $_POST["component"];
         $weight = $_POST["weight"];
@@ -769,21 +780,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "weight_ok" => true,
         ];
 
-        $current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $teacher_id);
+        $sql = "SELECT SUM(weight) AS current_weight_sum FROM grade_components WHERE subject_id = '" . $subject_id . "' GROUP BY subject_id";
+        $current_weight_sum = $db->run_custom_query($sql);
 
-        if ($current_weight_sum + $weight > 100) {
+        if ($current_weight_sum && intval($current_weight_sum[0]["current_weight_sum"]) + $weight > 100) {
             $response["weight_ok"] = false;
         } else {
-            $data = [
-                "uuid" => generate_uuid(),
-                "teacher_id" => $teacher_id,
-                "component" => $component,
-                "weight" => $weight,
-                "created_at" => $current_datetime,
-                "updated_at" => $current_datetime,
-            ];
+            $sql_2 = "SELECT id FROM grade_components WHERE subject_id='" . $subject_id . "' AND component='" . $component . "'";
+            $is_component_available = $db->run_custom_query($sql_2);
 
-            if ($db->insert("grade_components", $data)) {
+            if (!$is_component_available) {
+                $data = [
+                    "uuid" => generate_uuid(),
+                    "teacher_id" => $teacher_id,
+                    "subject_id" => $subject_id,
+                    "component" => $component,
+                    "weight" => $weight,
+                    "created_at" => $current_datetime,
+                    "updated_at" => $current_datetime,
+                ];
+
+                $db->insert("grade_components", $data);
+
                 $_SESSION["notification"] = [
                     "title" => "Success!",
                     "text" => "A grade component has been added successfully.",
@@ -799,6 +817,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($_POST["update_grade_component"])) {
         $id = $_POST["id"];
+        $subject_id = $_POST["subject_id"];
         $teacher_id = $_POST["teacher_id"];
         $component = $_POST["component"];
         $weight = $_POST["weight"];
@@ -809,21 +828,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "weight_ok" => true,
         ];
 
-        $current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $teacher_id);
+        $sql = "SELECT SUM(weight) AS current_weight_sum FROM grade_components WHERE subject_id = '" . $subject_id . "' GROUP BY subject_id";
+        $current_weight_sum = $db->run_custom_query($sql);
 
-        if ((intval($current_weight_sum) + intval($weight) - intval($old_weight))  > 100) {
+        if (intval($current_weight_sum[0]["current_weight_sum"]) + $weight - $old_weight > 100) {
             $response["weight_ok"] = false;
         } else {
-            $data = [
-                "component" => $component,
-                "weight" => $weight,
-                "updated_at" => $current_datetime,
-            ];
+            $sql_2 = "SELECT id FROM grade_components WHERE subject_id='" . $subject_id . "' AND component='" . $component . "' AND id != '" . $id . "'";
+            $is_component_available = $db->run_custom_query($sql_2);
 
-            if ($db->update("grade_components", $data, "id", $id)) {
+            if (!$is_component_available) {
+                $data = [
+                    "teacher_id" => $teacher_id,
+                    "subject_id" => $subject_id,
+                    "component" => $component,
+                    "weight" => $weight,
+                    "updated_at" => $current_datetime,
+                ];
+
+                $db->update("grade_components", $data, "id", $id);
+
                 $_SESSION["notification"] = [
                     "title" => "Success!",
-                    "text" => "A grade component has been updated successfully.",
+                    "text" => "A grade component has been added successfully.",
                     "icon" => "success",
                 ];
             } else {
@@ -851,13 +878,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST["check_grade_component_weight"])) {
         $teacher_id = $_POST["teacher_id"];
 
-        $response = false;
-
-        $current_weight_sum = $db->get_sum('grade_components', 'weight', 'teacher_id', $teacher_id);
-
-        if ($current_weight_sum < 100) {
-            $response = true;
-        }
+        $response = !$db->check_subject_weight($teacher_id);
 
         echo json_encode($response);
     }
