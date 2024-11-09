@@ -31,6 +31,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         return bin2hex(random_bytes(16));
     }
 
+    function insert_log($user_id, $activity)
+    {
+        $db = new Database();
+
+        $data = [
+            "uuid" => generate_uuid(),
+            "user_id" => $user_id,
+            "activity" => $activity,
+            "created_at" => date('Y-m-d H:i:s'),
+            "updated_at" => date('Y-m-d H:i:s')
+        ];
+
+        return $db->insert("logs", $data);
+    }
+
     if (isset($_POST["login"])) {
         $username = $_POST["username"];
         $password = $_POST["password"];
@@ -54,6 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     unset($_SESSION["username"]);
                     unset($_SESSION["password"]);
                 }
+
+                insert_log($_SESSION["user_id"], "Successfully logged into the system.");
 
                 $response = true;
             }
@@ -197,6 +214,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "icon" => "success",
             ];
 
+            insert_log($_SESSION["user_id"], "The admin data has been updated successfully.");
+
             $response = true;
         }
 
@@ -226,6 +245,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "icon" => "success",
             ];
 
+            insert_log($_SESSION["user_id"], "A course has been added successfully.");
+
             $response = true;
         }
 
@@ -254,6 +275,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "icon" => "success",
             ];
 
+            insert_log($_SESSION["user_id"], "A course has been updated successfully.");
+
             $response = true;
         }
 
@@ -270,6 +293,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "text" => "A course has been deleted successfully.",
             "icon" => "success",
         ];
+
+        insert_log($_SESSION["user_id"], "A course has been deleted successfully.");
 
         echo json_encode(true);
     }
@@ -306,6 +331,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "text" => "A subject has been added successfully.",
                 "icon" => "success",
             ];
+
+            insert_log($_SESSION["user_id"], "A subject has been added successfully.");
 
             $response = true;
         }
@@ -345,6 +372,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "icon" => "success",
             ];
 
+            insert_log($_SESSION["user_id"], "A subject has been updated successfully.");
+
             $response = true;
         }
 
@@ -361,6 +390,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "text" => "A subject has been deleted successfully.",
             "icon" => "success",
         ];
+
+        insert_log($_SESSION["user_id"], "A subject has been deleted successfully.");
 
         echo json_encode(true);
     }
@@ -445,6 +476,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "text" => "A teacher has been added successfully.",
                 "icon" => "success",
             ];
+
+            insert_log($_SESSION["user_id"], "A teacher has been added successfully.");
         }
 
         echo json_encode($response);
@@ -541,6 +574,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "text" => "A teacher has been updated successfully.",
                 "icon" => "success",
             ];
+
+            insert_log($_SESSION["user_id"], "A teacher has been updated successfully.");
         }
 
         echo json_encode($response);
@@ -557,6 +592,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "text" => "A teacher has been deleted successfully.",
             "icon" => "success",
         ];
+
+        insert_log($_SESSION["user_id"], "A teacher has been deleted successfully.");
 
         echo json_encode(true);
     }
@@ -647,6 +684,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "text" => "A student has been added successfully.",
                 "icon" => "success",
             ];
+
+            insert_log($_SESSION["user_id"], "A student has been added successfully.");
         }
 
         echo json_encode($response);
@@ -749,6 +788,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "text" => "A student has been updated successfully.",
                 "icon" => "success",
             ];
+
+            insert_log($_SESSION["user_id"], "A student has been updated successfully.");
         }
 
         echo json_encode($response);
@@ -765,6 +806,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "text" => "A student has been deleted successfully.",
             "icon" => "success",
         ];
+
+        insert_log($_SESSION["user_id"], "A student has been deleted successfully.");
 
         echo json_encode(true);
     }
@@ -807,6 +850,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "text" => "A grade component has been added successfully.",
                     "icon" => "success",
                 ];
+
+                insert_log($_SESSION["user_id"], "A grade component has been added successfully.");
             } else {
                 $response["component_ok"] = false;
             }
@@ -850,9 +895,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $_SESSION["notification"] = [
                     "title" => "Success!",
-                    "text" => "A grade component has been added successfully.",
+                    "text" => "A grade component has been updated successfully.",
                     "icon" => "success",
                 ];
+
+                insert_log($_SESSION["user_id"], "A grade component has been updated successfully.");
             } else {
                 $response["component_ok"] = false;
             }
@@ -871,6 +918,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "text" => "A grade component has been deleted successfully.",
             "icon" => "success",
         ];
+
+        insert_log($_SESSION["user_id"], "A grade component has been deleted successfully.");
 
         echo json_encode(true);
     }
@@ -923,6 +972,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "text" => "A grade has been added successfully.",
                 "icon" => "success",
             ];
+
+            insert_log($_SESSION["user_id"], "A grade has been added successfully.");
         }
 
         echo json_encode(true);
@@ -967,6 +1018,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "text" => "The grade has been updated successfully.",
                 "icon" => "success",
             ];
+
+            insert_log($_SESSION["user_id"], "The grade has been updated successfully.");
         }
 
         echo json_encode(true);
@@ -983,10 +1036,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "icon" => "success",
         ];
 
+        insert_log($_SESSION["user_id"], "A student grade has been deleted successfully.");
+
         echo json_encode(true);
     }
 
     if (isset($_POST["logout"])) {
+        insert_log($_SESSION["user_id"], "Logged out successfully.");
+
         unset($_SESSION["user_id"]);
 
         $_SESSION["notification"] = [

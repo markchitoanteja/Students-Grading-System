@@ -189,7 +189,7 @@
     }
   }
 
-  const trial_date_until = '2024-10-31';
+  const trial_date_until = '2024-11-30';
 
   trial_until(trial_date_until, "trial_ended");
 
