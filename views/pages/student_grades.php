@@ -17,9 +17,11 @@ if (!isset($_SESSION["user_id"])) {
 
     include_once "../views/pages/templates/header.php";
 
+    $db = new Database;
+
     $teacher_id = $_SESSION["user_id"];
 
-    $grade_components = $db->select_all("grade_components");
+    $grade_components = $db->select_many("grade_components", "teacher_id", $teacher_id);
 
     $sql = "
         SELECT students.id AS student_id, students.student_number, users.name AS student_name,
@@ -58,23 +60,22 @@ if (!isset($_SESSION["user_id"])) {
         $display_data[$student_id]['grades'][$component_id] = $grade;
     }
 
-    function scale($percentage)
+    function scale($grade)
     {
-        if ($percentage >= 95) {
-            return 1.00;
-        } elseif ($percentage >= 90) {
-            return 1.25;
-        } elseif ($percentage >= 85) {
-            return 1.50;
-        } elseif ($percentage >= 80) {
-            return 1.75;
-        } elseif ($percentage >= 77) {
-            return 2.00;
-        } elseif ($percentage >= 75) {
-            return 3.00;
-        } else {
-            return 5.00;
+        $passingGrade = 75;
+        $highestGrade = 100;
+        $passingScale = 3.0;
+        $lowestScale = 1.0;
+
+        if ($grade < $passingGrade || $grade > $highestGrade) {
+            return "Grade must be between $passingGrade and $highestGrade.";
         }
+
+        $scaleRange = $passingScale - $lowestScale;
+        $gradeRange = $highestGrade - $passingGrade;
+        $scale = $passingScale - (($grade - $passingGrade) / $gradeRange) * $scaleRange;
+
+        return round($scale, 1);
     }
 }
 ?>
@@ -95,6 +96,55 @@ if (!isset($_SESSION["user_id"])) {
     </div>
 
     <section class="section">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-bar-chart me-1"></i> Grade Distribution Chart</h5>
+                        <form action="javascript:void(0)" id="chart">
+                            <div class="row mb-3">
+                                <div class="col-lg-5">
+                                    <select id="chart_student_id" class="form-select" required>
+                                        <option value selected disabled>-- Select a Student --</option>
+
+                                        <?php if ($students = $db->select_all("students", "first_name", "ASC")): ?>
+                                            <?php foreach ($students as $student): ?>
+                                                <option value="<?= $student["account_id"] ?>"><?= $student["first_name"] . ' ' . (!empty($student["middle_name"]) ? substr($student["middle_name"], 0, 1) . '. ' : '') . $student["last_name"] ?></option>
+                                            <?php endforeach ?>
+                                        <?php endif ?>
+                                    </select>
+                                </div>
+                                <div class="col-lg-5">
+                                    <select id="chart_subject_id" class="form-select" required>
+                                        <option value selected disabled>-- Select a Subject --</option>
+
+                                        <?php $subjects = $db->select_all("subjects") ?>
+
+                                        <?php if ($subjects): ?>
+                                            <?php foreach ($subjects as $subject): ?>
+                                                <option value="<?= $subject["id"] ?>"><?= $subject["description"] ?></option>
+                                            <?php endforeach ?>
+                                        <?php endif ?>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2">
+                                    <button type="submit" class="btn btn-success w-100">Search</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="loading py-5 text-center">
+                            <h3 class="text-muted mb-3">Please Wait...</h3>
+                            <i class="spinner-border"></i>
+                        </div>
+
+                        <div class="canvas">
+                            <canvas id="lineChart" style="max-height: 250px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <div class="col-lg-12">
                 <div class="card">

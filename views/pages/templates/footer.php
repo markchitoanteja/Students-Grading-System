@@ -12,8 +12,10 @@
         <script>
             var user_id = "<?= $_SESSION["user_id"] ?>";
             var notification = <?= isset($_SESSION["notification"]) ? json_encode($_SESSION["notification"]) : json_encode(null) ?>;
+            var current_page = "<?= $current_page ?>";
         </script>
 
+        <script src="assets/vendor/chart.js/chart.umd.js"></script>
         <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
         <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
         <script src="assets/vendor/jquery/jquery.min.js"></script>

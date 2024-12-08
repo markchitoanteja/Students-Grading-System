@@ -1,5 +1,6 @@
 jQuery(document).ready(function () {
     let grades = [];
+    let chartInstance = null;
 
     if (notification) {
         Swal.fire({
@@ -7,6 +8,18 @@ jQuery(document).ready(function () {
             text: notification.text,
             icon: notification.icon
         });
+    }
+
+    if (current_page == "student_grades") {
+        $(".loading").removeClass("d-none");
+        $(".canvas").addClass("d-none");
+
+        setTimeout(function () {
+            $(".loading").addClass("d-none");
+            $(".canvas").removeClass("d-none");
+
+            display_chart(['Component 1', 'Component 2', 'Component 3', 'Component 4'], "Sample Subject (Student Name)", [0, 0, 0, 0]);
+        }, 250);
     }
 
     $(".logout").click(function () {
@@ -2692,6 +2705,153 @@ jQuery(document).ready(function () {
             }
         });
     })
+
+    $("#chart").submit(function () {
+        const teacher_id = user_id;
+        const student_id = $("#chart_student_id").val();
+        const subject_id = $("#chart_subject_id").val();
+
+        const student_name = $('#chart_student_id option:selected').text();
+        const subject = $('#chart_subject_id option:selected').text();
+
+        $(".loading").removeClass("d-none");
+        $(".canvas").addClass("d-none");
+
+        var formData = new FormData();
+
+        formData.append('teacher_id', teacher_id);
+        formData.append('student_id', student_id);
+        formData.append('subject_id', subject_id);
+
+        formData.append('get_grade_data', true);
+
+        $.ajax({
+            url: 'server',
+            data: formData,
+            type: 'POST',
+            dataType: 'JSON',
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                $(".loading").addClass("d-none");
+                $(".canvas").removeClass("d-none");
+
+                const newLabels = response.components;
+                const newDatasetLabel = student_name + " (" + subject + ")";
+                const newDatasetData = response.grades;
+
+                display_chart(newLabels, newDatasetLabel, newDatasetData);
+            },
+            error: function (_, _, error) {
+                console.error(error);
+            }
+        });
+    })
+
+    $("#new_backup").click(function () {
+        Swal.fire({
+            title: "Confirm Backup",
+            text: "A backup of the current database will be created as an SQL file. Do you want to proceed?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, create backup"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var formData = new FormData();
+
+                formData.append('backup_database', true);
+
+                $.ajax({
+                    url: 'server',
+                    data: formData,
+                    type: 'POST',
+                    dataType: 'JSON',
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response) {
+                            location.reload();
+                        }
+                    },
+                    error: function (_, _, error) {
+                        console.error(error);
+                    }
+                });
+            }
+        });
+    })
+
+    $(document).on("click", ".restore_backup", function () {
+        var backup_file = $(this).data("filename");
+
+        Swal.fire({
+            title: "Confirm Restore",
+            text: "You are about to restore the database to the selected point: " + backup_file + ". Do you want to proceed?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, restore",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var formData = new FormData();
+
+                formData.append('backup_file', backup_file);
+
+                formData.append('restore_database', true);
+
+                $.ajax({
+                    url: 'server',
+                    data: formData,
+                    type: 'POST',
+                    dataType: 'JSON',
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        location.reload();
+                    },
+                    error: function (_, _, error) {
+                        console.error("AJAX Error: ", error);
+                    }
+                });
+            }
+        });
+    })
+
+    function display_chart(labels, dataset_label, dataset_data) {
+        const ctx = $('#lineChart');
+
+        if (chartInstance) {
+            chartInstance.data.labels = labels;
+            chartInstance.data.datasets[0].label = dataset_label;
+            chartInstance.data.datasets[0].data = dataset_data;
+            chartInstance.update();
+        } else {
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: dataset_label,
+                        data: dataset_data,
+                        fill: false,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
 
     function getOrdinalSuffix(n) {
         const s = ["th", "st", "nd", "rd"], v = n % 100;

@@ -1,4 +1,4 @@
-<?php 
+<?php
 if (!isset($_SESSION["user_id"])) {
     $_SESSION["notification"] = [
         "type" => "alert-danger bg-danger",

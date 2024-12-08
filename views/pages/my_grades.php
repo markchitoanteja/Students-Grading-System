@@ -58,23 +58,22 @@ if (!isset($_SESSION["user_id"])) {
         $display_data[$student_id]['grades'][$component_id] = $grade;
     }
 
-    function scale($percentage)
+    function scale($grade)
     {
-        if ($percentage >= 95) {
-            return 1.00;
-        } elseif ($percentage >= 90) {
-            return 1.25;
-        } elseif ($percentage >= 85) {
-            return 1.50;
-        } elseif ($percentage >= 80) {
-            return 1.75;
-        } elseif ($percentage >= 77) {
-            return 2.00;
-        } elseif ($percentage >= 75) {
-            return 3.00;
-        } else {
-            return 5.00;
+        $passingGrade = 75;
+        $highestGrade = 100;
+        $passingScale = 3.0;
+        $lowestScale = 1.0;
+
+        if ($grade < $passingGrade || $grade > $highestGrade) {
+            return "Grade must be between $passingGrade and $highestGrade.";
         }
+
+        $scaleRange = $passingScale - $lowestScale;
+        $gradeRange = $highestGrade - $passingGrade;
+        $scale = $passingScale - (($grade - $passingGrade) / $gradeRange) * $scaleRange;
+
+        return round($scale, 1);
     }
 }
 ?>

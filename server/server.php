@@ -2,6 +2,8 @@
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $current_datetime = date("Y-m-d H:i:s");
 
+    $db = new Database();
+
     function upload_image($target_directory, $image_file)
     {
         $response = false;
@@ -1037,6 +1039,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
 
         insert_log($_SESSION["user_id"], "A student grade has been deleted successfully.");
+
+        echo json_encode(true);
+    }
+
+    if (isset($_POST["get_grade_data"])) {
+        $teacher_id = $_POST["teacher_id"];
+        $student_id = $_POST["student_id"];
+        $subject_id = $_POST["subject_id"];
+
+        $grade_components = $db->select_many("grade_components", "teacher_id", $teacher_id);
+
+        $components = array();
+        $grades = array();
+
+        foreach ($grade_components as $grade_component) {
+            $component_id = $grade_component['id'];
+
+            $sql = "SELECT grade FROM student_grades WHERE student_id=$student_id AND teacher_id=$teacher_id AND grade_component_id=$component_id AND subject_id=$subject_id";
+            $grade = $db->run_custom_query($sql);
+
+            if ($grade) {
+                array_push($components, $grade_component["component"]);
+                array_push($grades, $grade[0]["grade"]);
+            }
+        }
+
+        $response = [
+            "components" => $components,
+            "grades" => $grades,
+        ];
+
+        echo json_encode($response);
+    }
+
+    if (isset($_POST["backup_database"])) {
+        $backup = $db->backup("backup");
+
+        if ($backup) {
+            $_SESSION["notification"] = [
+                "title" => "Success!",
+                "text" => "Database backup was successful.",
+                "icon" => "success",
+            ];
+
+            insert_log($_SESSION["user_id"], "Database backup was successful.");
+        }
+
+        echo json_encode(true);
+    }
+
+    if (isset($_POST["restore_database"])) {
+        $backup_file = basename($_POST["backup_file"]);
+        $backup_dir = 'backup/';
+        $file_path = $backup_dir . $backup_file;
+
+        if (!file_exists($file_path)) {
+            $_SESSION["notification"] = [
+                "title" => "Oops..",
+                "text" => "The backup file does not exists!",
+                "icon" => "error",
+            ];
+        } else {
+            if ($db->restore($file_path)) {
+                $_SESSION["notification"] = [
+                    "title" => "Success!",
+                    "text" => "Database restored successfully from $backup_file.",
+                    "icon" => "success",
+                ];
+
+                insert_log($_SESSION["user_id"], 'Restored database from backup file: ' . $backup_file);
+            } else {
+                $_SESSION["notification"] = [
+                    "title" => "Oops..",
+                    "text" => "There was an error while processing your request.",
+                    "icon" => "error",
+                ];
+            }
+        }
 
         echo json_encode(true);
     }

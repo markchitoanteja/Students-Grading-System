@@ -8,6 +8,7 @@ $routes = [
     'subjects' => '../views/pages/subjects.php',
     'teachers' => '../views/pages/teachers.php',
     'students' => '../views/pages/students.php',
+    'backup_and_restore' => '../views/pages/backup_and_restore.php',
     'grade_components' => '../views/pages/grade_components.php',
     'grade_entries' => '../views/pages/grade_entries.php',
     'student_grades' => '../views/pages/student_grades.php',

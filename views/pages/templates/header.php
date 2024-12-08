@@ -146,6 +146,14 @@ function get_initials($first_name)
                         <span>Students</span>
                     </a>
                 </li>
+                
+                <!-- Backup and Restore -->
+                <li class="nav-item">
+                    <a class="nav-link <?= $current_page != "backup_and_restore" ? "collapsed" : null ?>" href="backup_and_restore">
+                        <i class="bi bi-database"></i>
+                        <span>Backup and Restore</span>
+                    </a>
+                </li>
             <?php endif ?>
 
             <?php if ($_SESSION["user_type"] == "teacher"): ?>

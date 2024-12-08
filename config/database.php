@@ -6,6 +6,7 @@ class Database
     private $username = 'root';
     private $password = '';
     private $connection;
+    private $error_log_file = "logs/error_logs.txt";
 
     public function __construct()
     {
@@ -380,8 +381,125 @@ class Database
     {
         $stmt = $this->connection->prepare($custom_sql);
         $stmt->execute();
-        
+
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    private function drop_all_tables()
+    {
+        $result = $this->connection->query("SHOW TABLES");
+
+        if (!$result) {
+            $error_message = "Error fetching tables: " . $this->connection->error;
+
+            file_put_contents($this->error_log_file, $error_message, FILE_APPEND);
+
+            return;
+        }
+
+        while ($row = $result->fetch_row()) {
+            $table = $row[0];
+
+            $dropTableQuery = "DROP TABLE IF EXISTS `$table`";
+
+            if (!$this->connection->query($dropTableQuery)) {
+                $error_message = "Error dropping table '$table': " . $this->connection->error;
+
+                file_put_contents($this->error_log_file, $error_message, FILE_APPEND);
+            }
+        }
+    }
+
+    public function backup($backupDir = null)
+    {
+        $backupDir = $backupDir ?? __DIR__;
+        $backupFile = $backupDir . '/backup_' . $this->dbname . '_' . date("Y-m-d_H-i-s") . '.sql';
+
+        try {
+            $tables = [];
+            $result = $this->connection->query("SHOW TABLES");
+
+            if (!$result) {
+                throw new Exception("Error retrieving tables: " . $this->connection->error);
+            }
+
+            while ($row = $result->fetch_row()) {
+                $tables[] = $row[0];
+            }
+
+            $sqlDump = "-- Database Backup\n-- Database: {$this->dbname}\n-- Date: " . date("Y-m-d H:i:s") . "\n\n";
+
+            foreach ($tables as $table) {
+                $tableCreate = $this->connection->query("SHOW CREATE TABLE `$table`")->fetch_row()[1] . ";\n\n";
+                $sqlDump .= "-- Structure for table `$table`\n";
+                $sqlDump .= $tableCreate . "\n\n";
+
+                $result = $this->connection->query("SELECT * FROM `$table`");
+
+                if ($result->num_rows > 0) {
+                    $sqlDump .= "-- Data for table `$table`\n";
+                    while ($row = $result->fetch_assoc()) {
+                        $values = array_map([$this->connection, 'real_escape_string'], array_values($row));
+                        $values = "'" . implode("', '", $values) . "'";
+                        $columns = implode("`, `", array_keys($row));
+                        $sqlDump .= "INSERT INTO `$table` (`$columns`) VALUES ($values);\n";
+                    }
+                    $sqlDump .= "\n";
+                }
+            }
+
+            if (file_put_contents($backupFile, $sqlDump) === false) {
+                throw new Exception("Error writing backup file");
+            }
+
+            return $backupFile;
+        } catch (Exception $e) {
+            $error_message = date('Y-m-d H:i:s') . " - Error: " . $e->getMessage() . "\n";
+
+            file_put_contents($this->error_log_file, $error_message, FILE_APPEND);
+        }
+    }
+
+    public function restore($file_path)
+    {
+        if (file_exists($file_path)) {
+            $this->drop_all_tables();
+
+            $fp = fopen($file_path, 'r');
+            $fetchData = fread($fp, filesize($file_path));
+            fclose($fp);
+
+            $sqlInfo = explode(";\n", $fetchData);
+
+            foreach ($sqlInfo as $sqlData) {
+                $sqlData = trim($sqlData);
+
+                if (!empty($sqlData)) {
+                    try {
+                        $stmt = $this->connection->prepare($sqlData);
+                        if ($stmt) {
+                            $stmt->execute();
+                        } else {
+                            $error_message = "Failed to prepare statement: " . $this->connection->error;
+
+                            file_put_contents($this->error_log_file, $error_message, FILE_APPEND);
+                        }
+                    } catch (mysqli_sql_exception $e) {
+                        $error_message = "Error executing query: " . $e->getMessage();
+
+                        file_put_contents($this->error_log_file, $error_message, FILE_APPEND);
+                    }
+                }
+            }
+
+            $this->connection->commit();
+
+            return true;
+        } else {
+            file_put_contents($this->error_log_file, "Backup file does not exist: " . $file_path, FILE_APPEND);
+
+            return false;
+        }
     }
 }
 
