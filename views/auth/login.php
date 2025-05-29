@@ -59,8 +59,8 @@ if (isset($_SESSION["user_id"])) {
                         </div>
                         <div class="col-5 d-flex flex-column align-items-center justify-content-center bg-light">
                             <img src="assets/img/logo.png" alt="Logo" style="width: 100px;">
-                            <h3 class="mt-2 text-center"><b>Eastern Samar State University</b></h3>
-                            <h4 class="mt-2 text-center">Can-Avid Campus</h4>
+                            <h3 class="mt-2 text-center"><b>Can-Avid National High School</b></h3>
+                            <h4 class="mt-2 text-center">Can-Avid, Eastern Samar</h4>
                         </div>
                     </div>
                 </div>
